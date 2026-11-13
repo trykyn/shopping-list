@@ -77,7 +77,6 @@ li input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent)
 .badge.warn { background: var(--warn-bg); color: var(--warn); }
 .badge.bad { background: var(--bad-bg); color: var(--bad); }
 .badge.none { background: transparent; color: var(--muted); font-weight: 400; }
-.s-meta { color: var(--muted); font-size: 13px; margin: 2px 0 8px; }
 .s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; margin-top: 8px; }
 .s-row label { display: flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; min-height: 0; }
 .s-row .chip { white-space: nowrap; }
@@ -107,11 +106,8 @@ const T = {
     delStoreQ: n => `"${n}" 목록과 그 안의 항목을 모두 삭제할까요?`,
     unsorted: '📦 정리 전', unsortedHint: '어디에 보관할지 골라 주세요.',
     fridge: '냉장고', freezer: '냉동고', pantry: '실온',
-    bought: d => `${d} 구입`, est: n => `평균 약 ${n}일 보관 (자동 계산)`, frozenEst: n => `냉동 보관 약 ${n}일 (자동 계산)`,
-    noEst: '소비기한을 알 수 없어요 — 직접 입력하세요',
     exp: '소비기한', left: n => `${n}일 남음`, today: '오늘까지', over: n => `${n}일 지남`, noDate: '기한 없음',
-    again: '다시 사기', used: '다 썼어요', cal: '캘린더 알림',
-    calTitle: n => `소비기한 임박: ${n}`,
+    again: '다시 사기', used: '다 썼어요',
     banner: n => `⏰ 소비기한이 곧 끝나는 물건 ${n}개`,
     notifOn: '🔔 알림 켜기', notifOk: '🔔 알림 켜짐', notifNo: '알림이 차단되어 있어요 (브라우저 설정에서 허용)',
     nTitle: '소비기한 알림', nBody: (n, d) => d < 0 ? `${n} — 소비기한이 지났어요` : d === 0 ? `${n} — 오늘까지예요` : `${n} — ${d}일 남았어요`,
@@ -124,11 +120,8 @@ const T = {
     delStoreQ: n => `Liste „${n}“ mit allen Artikeln löschen?`,
     unsorted: '📦 Noch einzuräumen', unsortedHint: 'Bitte auswählen, wo es gelagert wird.',
     fridge: 'Kühlschrank', freezer: 'Gefrierfach', pantry: 'Vorrat',
-    bought: d => `gekauft am ${d}`, est: n => `im Schnitt ca. ${n} Tage haltbar (automatisch)`, frozenEst: n => `tiefgekühlt ca. ${n} Tage haltbar (automatisch)`,
-    noEst: 'Haltbarkeit unbekannt – bitte selbst eintragen',
     exp: 'Haltbar bis', left: n => n === 1 ? 'noch 1 Tag' : `noch ${n} Tage`, today: 'bis heute', over: n => n === 1 ? '1 Tag abgelaufen' : `${n} Tage abgelaufen`, noDate: 'kein Datum',
-    again: 'Nochmal kaufen', used: 'Aufgebraucht', cal: 'Kalender-Erinnerung',
-    calTitle: n => `Läuft bald ab: ${n}`,
+    again: 'Nochmal kaufen', used: 'Aufgebraucht',
     banner: n => n === 1 ? '⏰ 1 Artikel läuft bald ab' : `⏰ ${n} Artikel laufen bald ab`,
     notifOn: '🔔 Benachrichtigungen einschalten', notifOk: '🔔 Benachrichtigungen aktiv', notifNo: 'Benachrichtigungen sind blockiert (in den Browser-Einstellungen erlauben)',
     nTitle: 'Haltbarkeit', nBody: (n, d) => d < 0 ? `${n} – ist abgelaufen` : d === 0 ? `${n} – nur noch heute haltbar` : d === 1 ? `${n} – noch 1 Tag haltbar` : `${n} – noch ${d} Tage haltbar`,
@@ -290,7 +283,6 @@ const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')
 const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
 const daysLeft = s => Math.round((parse(s) - parse(iso(new Date()))) / 864e5);
-const fmt = s => parse(s).toLocaleDateString(S.lang === 'de' ? 'de-DE' : 'ko-KR', { day: 'numeric', month: 'short', year: 'numeric' });
 // Geschätzte Haltbarkeit am aktuellen Lagerort: im Gefrierfach mindestens 90 Tage.
 // 지금 보관 장소 기준 추정 보관 기간: 냉동고에서는 최소 90일.
 const shelfDays = x => x.days && (x.loc === 'freezer' ? Math.max(x.days, FROZEN_DAYS) : x.days);
@@ -368,14 +360,9 @@ function stockItem(x, L) {
     const d = daysLeft(x.expires);
     badge = `<span class="badge ${d < 0 ? 'bad' : soon(x) ? 'warn' : ''}">${d < 0 ? L.over(-d) : d === 0 ? L.today : L.left(d)}</span>`;
   }
-  const store = S.stores.find(s => s.id === x.store);
-  const n = shelfDays(x);
-  const est = !n ? L.noEst : x.loc === 'freezer' ? L.frozenEst(n) : L.est(n);
   return `<li class="s-item"><div class="s-top"><span class="name">${nameHtml(x.name)}</span>${badge}</div>
-    <div class="s-meta">${store ? esc(storeName(store)) + ' · ' : ''}${L.bought(fmt(x.bought))} · ${est}</div>
     <div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ICON[l]} ${L[l]}</button>`).join('')}</div>
     <div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
-      ${x.expires ? `<button class="chip" data-act="cal" data-v="${x.id}">📅 ${L.cal}</button>` : ''}
       <span class="sp"></span>
       <button class="chip" data-act="again" data-v="${x.id}">↩ ${L.again}</button>
       <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div></li>`;
@@ -426,7 +413,6 @@ const actions = {
     S.stock = S.stock.filter(y => y !== x);
   },
   used(v) { S.stock = S.stock.filter(x => x.id !== v); },
-  cal(v) { const x = S.stock.find(x => x.id === v); if (x) downloadIcs(x); return false; },
   notif() { Notification.requestPermission().then(() => { render(); checkExpiry(); }); return false; },
 };
 
@@ -475,24 +461,6 @@ function checkExpiry() {
     x.notified = changed = true;
   }
   if (changed) save();
-}
-
-// Kalendereintrag am Ablauftag mit Erinnerung vorher – klingelt auch bei geschlossener App
-// 소비기한 날짜의 캘린더 일정 + 미리 알림 — 앱이 닫혀 있어도 울림
-function downloadIcs(x) {
-  const d = x.expires.replace(/-/g, ''), end = addDays(x.expires, 1).replace(/-/g, '');
-  const text = s => s.replace(/([\\;,])/g, '\\$1');
-  const title = text(t().calTitle(tr(x.name)));
-  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//shopping-list//DE', 'BEGIN:VEVENT',
-    `UID:${x.id}@shopping-list`, `DTSTAMP:${new Date().toISOString().replace(/[-:]|\.\d+/g, '')}`,
-    `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${end}`, `SUMMARY:${title}`,
-    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${title}`, `TRIGGER:-P${lead(x)}D`, 'END:VALARM',
-    'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-  a.download = `${tr(x.name)}.ics`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 render();
