@@ -219,6 +219,20 @@ li input[type=checkbox]:checked { background-color: var(--accent); border-color:
 .cloud { border: 0; background: var(--card); border-radius: 16px; box-shadow: var(--shadow); }
 .shared .cloud { margin-top: 6px; }
 #toast button { box-shadow: none; text-decoration: underline; text-underline-offset: 3px; }
+/* Aufgeklappter Artikel in "Gekauft" / 구입한 것에서 펼친 항목 */
+.s-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.fld { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 13px; color: var(--muted); }
+.fld input {
+  width: 100%; min-width: 0; height: 42px; padding: 0 10px; font-size: 16px; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 10px; background: var(--field);
+}
+.fld input:focus { outline: 0; border-color: var(--accent); }
+.s-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+.s-acts button {
+  min-height: 42px; padding: 4px; border-radius: 10px; background: var(--soft); color: var(--accent);
+  font-size: 14px; font-weight: 600; line-height: 1.2;
+}
+.s-acts .main { background: var(--accent); color: var(--accent-ink); }
 </style>
 </head>
 <body>
@@ -237,6 +251,7 @@ const T = {
     unsorted: '정리 전', unsortedHint: '어디에 보관할지 골라 주세요.',
     fridge: '냉장고', freezer: '냉동고', pantry: '실온',
     exp: '소비기한', left: n => `${n}일 남음`, today: '오늘까지', over: n => `${n}일 지남`, noDate: '기한 없음',
+    memo: '메모', memoPh: '예: 250g 남음',
     note: '메모 쓰기', notePh: '메모 (예: 2개, 유기농)', noteOk: '저장', txPh: { de: '독일어 번역 고치기', ko: '한국어 번역 고치기' },
     move: '다른 목록으로 옮기기', moveTo: '옮길 곳:',
     again: '다시 사기', used: '다 썼어요',
@@ -261,6 +276,7 @@ const T = {
     unsorted: 'Noch einzuräumen', unsortedHint: 'Bitte auswählen, wo es gelagert wird.',
     fridge: 'Kühlschrank', freezer: 'Gefrierfach', pantry: 'Vorrat',
     exp: 'Haltbar bis', left: n => n === 1 ? 'noch 1 Tag' : `noch ${n} Tage`, today: 'bis heute', over: n => n === 1 ? '1 Tag abgelaufen' : `${n} Tage abgelaufen`, noDate: 'kein Datum',
+    memo: 'Notiz', memoPh: 'z. B. 250 g übrig',
     note: 'Notiz schreiben', notePh: 'Notiz (z. B. 2 Stück, Bio)', noteOk: 'Speichern', txPh: { de: 'Übersetzung (Deutsch)', ko: 'Übersetzung (Koreanisch)' },
     move: 'In eine andere Liste verschieben', moveTo: 'Verschieben nach:',
     again: 'Nochmal kaufen', used: 'Aufgebraucht',
@@ -669,6 +685,8 @@ function stockItem(x, L) {
     const d = daysLeft(x.expires);
     badge = `<span class="badge ${d < 0 ? 'bad' : soon(x) ? 'warn' : ''}">${d < 0 ? L.over(-d) : d === 0 ? L.today : L.left(d)}</span>`;
   }
+  // Aufgeklappt: Lagerort, darunter Notiz und Datum (speichern sich beim Verlassen des Felds), dann drei Aktionen.
+  // 펼치면: 보관 장소, 그 아래 메모와 날짜(칸을 벗어나면 저장), 그리고 동작 셋.
   // Eine Zeile pro Artikel; Antippen klappt die Bedienung auf. Noch nicht Eingeräumtes zeigt gleich die Lagerorte.
   // 물건마다 한 줄, 누르면 펼쳐짐. 정리 전 물건은 보관 장소 버튼을 바로 보여 줌.
   const open = x.id === openId, placed = LOCS.includes(x.loc);
@@ -677,12 +695,12 @@ function stockItem(x, L) {
   return `<li class="s-item" data-find="${esc(find)}"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
       <span class="name">${nameHtml(x.name)}${noteHtml(x)}</span>${badge}<span class="chev">${open ? '▴' : '▾'}</span></button>
     ${open || !placed ? `<div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ICON[l]} ${L[l]}</button>`).join('')}</div>` : ''}
-    ${open ? `${editForm(x, L)}
-      <div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
-      <span class="sp"></span>
-      <button class="chip" data-act="split" data-v="${x.id}">${L.split}</button>
-      <button class="chip" data-act="again" data-v="${x.id}">↩ ${L.again}</button>
-      <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div>` : ''}</li>`;
+    ${open ? `<div class="s-edit">
+        <label class="fld">${L.memo}<input name="note_${x.id}" data-act="memo" data-v="${x.id}" value="${esc(x.note || '')}" placeholder="${L.memoPh}" maxlength="60" autocomplete="off" enterkeyhint="done"></label>
+        <label class="fld">${L.exp}<input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label></div>
+      <div class="s-acts"><button data-act="split" data-v="${x.id}">${L.split}</button>
+        <button data-act="again" data-v="${x.id}">${L.again}</button>
+        <button class="main" data-act="used" data-v="${x.id}">${L.used}</button></div>` : ''}</li>`;
 }
 
 // ---------- Suche in "Gekauft" / 구입한 것 검색 ----------
@@ -789,6 +807,10 @@ const actions = {
     if (loc === 'pantry') S.memo.push({ id: key, loc });
     if (!x.manual && x.days) { x.expires = addDays(x.bought, shelfDays(x)); }
   },
+  memo(v, el) {
+    const x = S.stock.find(x => x.id === v), note = el.value.trim();
+    if (x && note) x.note = note; else if (x) delete x.note;
+  },
   exp(v, el) {
     const x = S.stock.find(x => x.id === v);
     if (x) { x.expires = el.value || null; x.manual = true; }
@@ -850,6 +872,8 @@ app.addEventListener('click', e => {
   const el = e.target.closest('button[data-act]');
   if (el) run(el.dataset.act, el.dataset.v, el);
 });
+// Eingabetaste im Notizfeld speichert (das Feld verlassen löst 'change' aus) / 메모 칸에서 엔터를 누르면 저장
+app.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[data-act=memo]')) e.target.blur(); });
 app.addEventListener('change', e => {
   const el = e.target.closest('input[data-act]');
   if (!el) return;
