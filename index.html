@@ -51,6 +51,14 @@ button { cursor: pointer; border: 0; background: none; }
   background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 10px 14px;
   margin-bottom: 12px; font-size: 15px; width: 100%; text-align: left; display: block;
 }
+[hidden] { display: none !important; }
+.search { position: relative; margin-bottom: 4px; }
+.search input {
+  width: 100%; padding: 11px 40px 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
+  font-size: 16px; -webkit-appearance: none; appearance: none;
+}
+.search input::-webkit-search-cancel-button { display: none; }
+.search .x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); }
 .add { display: flex; gap: 8px; margin-bottom: 12px; }
 .add input {
   flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
@@ -128,6 +136,7 @@ const T = {
     note: '메모 쓰기', notePh: '메모 (예: 2개, 유기농)', noteOk: '저장', txPh: { de: '독일어 번역 고치기', ko: '한국어 번역 고치기' },
     move: '다른 목록으로 옮기기', moveTo: '옮길 곳:',
     again: '다시 사기', used: '다 썼어요',
+    searchPh: '구입한 것 검색 (예: 두부, Milch)', noMatch: '찾는 물건이 없어요.', clear: '검색어 지우기',
     banner: n => `⏰ 소비기한이 곧 끝나는 물건 ${n}개`,
     notifOn: '🔔 알림 켜기', notifOk: '🔔 알림 켜짐', notifNo: '알림이 차단되어 있어요 (브라우저 설정에서 허용)',
     signHint: '로그인하면 가족과 같은 목록을 함께 쓸 수 있어요.', signIn: '구글로 로그인', signOut: '로그아웃',
@@ -148,6 +157,7 @@ const T = {
     note: 'Notiz schreiben', notePh: 'Notiz (z. B. 2 Stück, Bio)', noteOk: 'Speichern', txPh: { de: 'Übersetzung (Deutsch)', ko: 'Übersetzung (Koreanisch)' },
     move: 'In eine andere Liste verschieben', moveTo: 'Verschieben nach:',
     again: 'Nochmal kaufen', used: 'Aufgebraucht',
+    searchPh: 'Gekauftes suchen (z. B. Milch, 두부)', noMatch: 'Nichts gefunden.', clear: 'Suche löschen',
     banner: n => n === 1 ? '⏰ 1 Artikel läuft bald ab' : `⏰ ${n} Artikel laufen bald ab`,
     notifOn: '🔔 Benachrichtigungen einschalten', notifOk: '🔔 Benachrichtigungen aktiv', notifNo: 'Benachrichtigungen sind blockiert (in den Browser-Einstellungen erlauben)',
     signHint: 'Mit Anmeldung könnt ihr dieselbe Liste gemeinsam nutzen.', signIn: 'Mit Google anmelden', signOut: 'Abmelden',
@@ -389,6 +399,7 @@ function render() {
     if (el && (value || focused)) el.value = value;
     if (el && focused) el.focus();
   }
+  filterStock(); // Suchbegriff gilt auch nach dem Neuzeichnen / 다시 그려도 검색어 유지
 
   for (const x of [...S.items, ...S.stock, ...S.stores.filter(s => !s.key)]) translateOnline(x.name);
 }
@@ -414,15 +425,20 @@ function cloudHtml(L) {
 function renderStock(L, due) {
   let h = due ? `<div class="banner">${L.banner(due)}</div>` : '';
   if (!S.stock.length) return h + `<p class="empty">${esc(L.emptyStock).replace('\n', '<br>')}</p>`;
+  // Suchfeld: filtert beim Tippen, ohne neu zu zeichnen (sonst bricht die koreanische Eingabe ab).
+  // 검색 칸: 입력하는 대로 걸러 냄. 다시 그리지 않음 (다시 그리면 한글 조합이 끊김).
+  h += `<div class="search"><input type="search" name="stockQ" data-search placeholder="${L.searchPh}" aria-label="${L.searchPh}"
+    autocomplete="off" enterkeyhint="search"><button type="button" class="x" data-clear-search aria-label="${L.clear}" hidden>×</button></div>`;
   // Erst das noch nicht Eingeräumte, dann je Lagerort / 정리 전 물건 먼저, 그다음 보관 장소별
   for (const loc of [null, ...LOCS]) {
     const xs = S.stock.filter(x => (LOCS.includes(x.loc) ? x.loc : null) === loc)
       .sort((a, b) => (a.expires || '9999').localeCompare(b.expires || '9999'));
     if (!xs.length) continue;
-    h += `<h2>${loc ? ICON[loc] + ' ' + L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
+    h += `<section class="stock-sec"><h2>${loc ? ICON[loc] + ' ' + L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
     if (!loc) h += `<p class="hint">${L.unsortedHint}</p>`;
-    h += '<ul>' + xs.map(x => stockItem(x, L)).join('') + '</ul>';
+    h += '<ul>' + xs.map(x => stockItem(x, L)).join('') + '</ul></section>';
   }
+  h += `<p class="empty" id="no-match" hidden>${L.noMatch}</p>`;
   if ('Notification' in window) {
     const p = Notification.permission;
     h += `<div class="foot">${p === 'granted' ? `<span class="link" style="text-decoration:none">${L.notifOk}</span>`
@@ -449,7 +465,9 @@ function stockItem(x, L) {
   // Eine Zeile pro Artikel; Antippen klappt die Bedienung auf. Noch nicht Eingeräumtes zeigt gleich die Lagerorte.
   // 물건마다 한 줄, 누르면 펼쳐짐. 정리 전 물건은 보관 장소 버튼을 바로 보여 줌.
   const open = x.id === openId, placed = LOCS.includes(x.loc);
-  return `<li class="s-item"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
+  // Suchtext: Name in beiden Sprachen und Notiz / 검색용 글: 두 언어 이름과 메모
+  const find = searchKey([x.name, tr(x.name, 'ko'), tr(x.name, 'de'), x.note || ''].join(' '));
+  return `<li class="s-item" data-find="${esc(find)}"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
       <span class="name">${nameHtml(x.name)}${noteHtml(x)}</span>${badge}<span class="chev">${open ? '▴' : '▾'}</span></button>
     ${open || !placed ? `<div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ICON[l]} ${L[l]}</button>`).join('')}</div>` : ''}
     ${open ? `${editForm(x, L)}
@@ -457,6 +475,30 @@ function stockItem(x, L) {
       <span class="sp"></span>
       <button class="chip" data-act="again" data-v="${x.id}">↩ ${L.again}</button>
       <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div>` : ''}</li>`;
+}
+
+// ---------- Suche in "Gekauft" / 구입한 것 검색 ----------
+// Groß/klein und Leerzeichen egal: "Voll Milch" findet "Vollmilch", "두 부" findet "두부".
+// 대소문자와 띄어쓰기 상관없이 찾기.
+const searchKey = s => String(s).toLowerCase().replace(/\s+/g, '');
+function filterStock() {
+  const box = app.querySelector('input[data-search]');
+  if (!box) return;
+  const q = searchKey(box.value);
+  let shown = 0;
+  for (const sec of app.querySelectorAll('.stock-sec')) {
+    let n = 0;
+    for (const li of sec.querySelectorAll('li.s-item')) {
+      const hit = !q || li.dataset.find.includes(q);
+      li.hidden = !hit;
+      if (hit) n++;
+    }
+    sec.hidden = !n;
+    sec.querySelector('h2 .n').textContent = n; // Anzahl der gefundenen / 찾은 개수
+    shown += n;
+  }
+  app.querySelector('#no-match').hidden = shown > 0;
+  app.querySelector('[data-clear-search]').hidden = !box.value;
 }
 
 // ---------- Aktionen / 동작 ----------
@@ -548,7 +590,15 @@ function run(act, v, el) {
   if (act === 'noteOpen' && noteId) app.querySelector('form[data-act=note] input').focus();
 }
 const app = document.getElementById('app');
+app.addEventListener('input', e => { if (e.target.matches('input[data-search]')) filterStock(); });
 app.addEventListener('click', e => {
+  if (e.target.closest('[data-clear-search]')) {
+    const box = app.querySelector('input[data-search]');
+    box.value = '';
+    filterStock();
+    box.focus();
+    return;
+  }
   const el = e.target.closest('button[data-act]');
   if (el) run(el.dataset.act, el.dataset.v, el);
 });
