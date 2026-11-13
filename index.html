@@ -3,126 +3,164 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2f7d5b">
+<meta name="theme-color" content="#f7f1e6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1d1a17" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
 <title>장보기</title>
 <style>
+/* Aussehen: Notizblock auf warmem Papier. Tinte als Hauptfarbe, Tomatenrot nur für Dringendes, Grün nur für "in Ordnung".
+   모양: 따뜻한 종이 위의 메모장. 기본은 먹색, 급한 것만 토마토색, 괜찮은 것만 초록. */
 :root {
-  --bg: #f6f5f1; --card: #ffffff; --ink: #1f2623; --muted: #6d7772; --line: #e3e1da;
-  --accent: #2f7d5b; --accent-ink: #ffffff; --soft: #e6f1eb;
-  --warn: #b7791f; --warn-bg: #fdf3dc; --bad: #b3372f; --bad-bg: #fbe6e3;
+  --bg: #f7f1e6; --card: #fffdf8; --ink: #2a2420; --muted: #8b8074; --line: #dfd4c1;
+  --accent: #c4432b; --accent-ink: #fffaf2; --soft: #f1e6d3; --ok: #3f7a5a;
+  --warn: #c4432b; --warn-bg: #f8e3cf; --bad: #fffaf2; --bad-bg: #c4432b;
+  --fridge: #5d9fd6; --freezer: #3b4f8f; --pantry: #c9983f;
+  --serif: "Gowun Batang", "Noto Serif KR", "Apple SD Gothic Neo", Georgia, serif;
+  --sans: "Gowun Dodum", system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #151917; --card: #1f2522; --ink: #ecefed; --muted: #98a39d; --line: #303834;
-    --accent: #5fbf93; --accent-ink: #10231a; --soft: #24352d;
-    --warn: #e5b45a; --warn-bg: #3a2f17; --bad: #f08a80; --bad-bg: #3d211e;
+    --bg: #1d1a17; --card: #27231f; --ink: #f1eadf; --muted: #a09385; --line: #3d3630;
+    --accent: #f0805f; --accent-ink: #2b1209; --soft: #332b25; --ok: #7cc49c;
+    --warn: #f0805f; --warn-bg: #3b271f; --bad: #2b1209; --bad-bg: #f0805f;
+    --fridge: #7db5e3; --freezer: #8497d6; --pantry: #dcb264;
   }
 }
 * { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--bg); color: var(--ink);
-  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-}
-main { max-width: 560px; margin: 0 auto; padding: 16px 16px 64px; }
-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-h1 { font-size: 22px; margin: 0; }
-h2 { font-size: 16px; margin: 20px 2px 8px; }
-h2 .n { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 6px; }
-.hint { color: var(--muted); font-size: 14px; margin: -4px 2px 8px; }
-button, input { font: inherit; color: inherit; }
-button { cursor: pointer; border: 0; background: none; }
-.lang { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--card); }
-.lang button { padding: 6px 12px; font-size: 14px; color: var(--muted); }
-.lang button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
-.tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
-.tabs::-webkit-scrollbar { display: none; }
-.tab {
-  flex: none; padding: 8px 14px; border-radius: 999px; background: var(--card);
-  border: 1px solid var(--line); white-space: nowrap; font-size: 15px;
-}
-.tab.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
-.tab .n { opacity: .75; font-size: 13px; margin-left: 4px; }
-.tab.stock { border-style: dashed; }
-.tab.stock.on { border-style: solid; }
-.banner {
-  background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 10px 14px;
-  margin-bottom: 12px; font-size: 15px; width: 100%; text-align: left; display: block;
-}
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--sans); -webkit-text-size-adjust: 100%; }
+main { max-width: 540px; margin: 0 auto; padding: 22px 20px 96px; }
 [hidden] { display: none !important; }
-.search { position: relative; margin-bottom: 4px; }
-.search input {
-  width: 100%; padding: 11px 40px 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
-  font-size: 16px; -webkit-appearance: none; appearance: none;
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; padding: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Kopf: Datum, großer Titel, Sprachwahl / 머리: 날짜, 큰 제목, 언어 */
+header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.date { margin: 0 0 2px; font-size: 13px; color: var(--muted); letter-spacing: .02em; }
+h1 { font: 700 32px/1.15 var(--serif); letter-spacing: -.02em; margin: 0; }
+.lang { display: flex; gap: 12px; padding-bottom: 6px; }
+.lang button { font-size: 13px; color: var(--muted); padding: 4px 0; border-bottom: 2px solid transparent; }
+.lang button.on { color: var(--ink); border-bottom-color: var(--ink); }
+
+/* Reiter als unterstrichene Wörter / 탭은 밑줄 친 글자로 */
+.tabs { display: flex; gap: 22px; overflow-x: auto; margin: 0 -20px 18px; padding: 0 20px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; padding: 10px 0 8px; white-space: nowrap; font-size: 16px; color: var(--muted); border-bottom: 3px solid transparent; }
+.tab.on { color: var(--ink); font-family: var(--serif); font-weight: 700; border-bottom-color: var(--ink); }
+.tab .n { font: 400 12px var(--sans); color: var(--accent); margin-left: 3px; vertical-align: 7px; }
+
+.banner {
+  display: block; width: 100%; text-align: left; margin-bottom: 16px; padding: 10px 14px; font-size: 15px;
+  background: var(--warn-bg); color: var(--ink); border-left: 3px solid var(--accent); border-radius: 2px 8px 8px 2px;
 }
-.search input::-webkit-search-cancel-button { display: none; }
-.search .x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); }
-.add { display: flex; gap: 8px; margin-bottom: 12px; }
-.add input {
-  flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card);
+
+/* Eingabe: eine Linie wie im Heft / 입력 칸은 공책 줄처럼 */
+.add { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+.add input, .search input {
+  flex: 1; min-width: 0; width: 100%; padding: 10px 2px; font-size: 17px; background: none; border: 0; border-radius: 0;
+  border-bottom: 2px solid var(--ink); outline: 0; -webkit-appearance: none; appearance: none;
 }
+.add input::placeholder, .search input::placeholder { color: var(--muted); opacity: .8; }
+.add input:focus, .search input:focus { border-bottom-color: var(--accent); }
 .add button, .btn {
-  padding: 0 16px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); font-weight: 600; min-height: 44px;
+  padding: 0 18px; min-height: 44px; border-radius: 10px; background: var(--ink); color: var(--bg);
+  font-family: var(--serif); font-weight: 700;
 }
-.btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
-ul { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
-li:first-child { border-top: 0; }
-.pick { flex: 1; min-width: 0; min-height: 32px; text-align: left; padding: 0; }
-.note { font-size: 13px; color: var(--accent); background: var(--soft); border-radius: 6px; padding: 1px 7px; margin-left: 6px; white-space: nowrap; }
-.move input { flex: 1 1 130px; min-width: 0; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
-li input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
-.name { overflow-wrap: anywhere; }
-.alt { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 6px; }
-.x { color: var(--muted); padding: 6px 8px; font-size: 18px; line-height: 1; border-radius: 8px; }
-.x:hover { background: var(--soft); }
-li { flex-wrap: wrap; }
-.move { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); padding: 0 0 4px 34px; }
-.empty { color: var(--muted); text-align: center; padding: 36px 12px; }
-.foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.link { color: var(--muted); font-size: 14px; text-decoration: underline; padding: 6px 2px; }
-.s-item { display: block; }
-.s-item { padding: 0 12px; }
-.s-top { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 0; min-height: 44px; }
-.s-top .name { flex: 1; min-width: 0; }
-.chev { color: var(--muted); font-size: 12px; }
-.s-item .seg { margin-bottom: 10px; }
-.s-item .s-row { margin: 0 0 12px; }
-.badge { flex: none; font-size: 13px; padding: 2px 9px; border-radius: 999px; background: var(--soft); color: var(--accent); font-weight: 600; }
-.badge.warn { background: var(--warn-bg); color: var(--warn); }
-.badge.bad { background: var(--bad-bg); color: var(--bad); }
-.badge.none { background: transparent; color: var(--muted); font-weight: 400; }
-.s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; margin-top: 8px; }
-.s-row label { display: flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; min-height: 0; }
-.s-row .chip { white-space: nowrap; }
-.s-row input[type=date] { padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); font-size: 14px; }
-.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 14px; }
-.seg button { flex: 1; padding: 7px 6px; white-space: nowrap; border-left: 1px solid var(--line); }
-.seg button:first-child { border-left: 0; }
-.seg button:hover { background: var(--soft); }
-.seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
-.sugg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
-.sugg .chip { background: var(--card); color: var(--ink); }
+.btn.ghost { background: none; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.search { position: relative; margin-bottom: 6px; }
+.search input { padding-right: 40px; border-bottom-width: 1px; border-bottom-color: var(--line); font-size: 16px; }
+.search input::-webkit-search-cancel-button { display: none; }
+.search .x { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+
+.sugg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+.sugg span { margin-right: 2px; }
+.sugg .chip { border-style: dashed; }
+
+/* Listen: gestrichelte Zeilen statt Kästen / 목록은 상자 대신 점선 줄 */
+ul { list-style: none; margin: 0; padding: 0; }
+li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px dashed var(--line); }
 li.flash { background: var(--soft); }
-#toast {
-  position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 10;
-  display: flex; align-items: center; gap: 14px; max-width: calc(100% - 32px); padding: 11px 16px; border-radius: 12px;
-  background: var(--ink); color: var(--bg); font-size: 15px; box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+li input[type=checkbox] {
+  -webkit-appearance: none; appearance: none; flex: none; width: 24px; height: 24px; margin: 0; cursor: pointer;
+  border: 1.5px solid var(--ink); border-radius: 7px; background: none center / 16px no-repeat;
 }
-#toast button { color: inherit; font-weight: 700; text-decoration: underline; white-space: nowrap; }
-.chip { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; }
-.chip:hover { background: var(--soft); }
+li input[type=checkbox]:checked {
+  background-color: var(--ink);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%23f7f1e6' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+@media (prefers-color-scheme: dark) {
+  li input[type=checkbox]:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%231d1a17' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+}
+.pick { flex: 1; min-width: 0; min-height: 32px; text-align: left; }
+.name { overflow-wrap: anywhere; font-size: 17px; }
+.alt { color: var(--muted); font-size: 13px; margin-left: 6px; }
+.note { font-size: 13px; color: var(--accent); margin-left: 8px; white-space: nowrap; }
+.note::before { content: "· "; color: var(--muted); }
+.x { color: var(--muted); padding: 6px 8px; font-size: 18px; line-height: 1; border-radius: 8px; }
+.x:hover { color: var(--ink); }
+.move { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); padding: 0 0 4px 36px; }
+.move input {
+  flex: 1 1 130px; min-width: 0; padding: 7px 10px; font-size: 16px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--card);
+}
+.move input:focus { outline: 0; border-color: var(--ink); }
+.empty { color: var(--muted); text-align: center; padding: 44px 12px; font-family: var(--serif); }
+
+/* Gekauft: Abschnitte mit Tintenstrich, Lagerort als Farbpunkt / 구입한 것: 먹선 아래 구역, 보관 장소는 색 점 */
+h2 { display: flex; align-items: baseline; gap: 8px; font: 700 18px/1.3 var(--serif); margin: 30px 0 0; padding-bottom: 7px; border-bottom: 2px solid var(--ink); }
+h2 .n { font: 400 13px var(--sans); color: var(--muted); }
+.hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+.dot { display: inline-block; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); align-self: center; }
+.dot.fridge { background: var(--fridge); }
+.dot.freezer { background: var(--freezer); }
+.dot.pantry { background: var(--pantry); }
+.s-item { display: block; padding: 0; }
+.s-top { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 0; min-height: 46px; }
+.s-top .name { flex: 1; min-width: 0; }
+.chev { color: var(--muted); font-size: 11px; }
+.badge { flex: none; font-size: 13px; color: var(--ok); font-variant-numeric: tabular-nums; }
+.badge.warn { color: var(--warn); box-shadow: inset 0 -6px 0 var(--warn-bg); }
+.badge.bad { color: var(--bad); background: var(--bad-bg); padding: 1px 7px; border-radius: 5px; }
+.badge.none { color: var(--muted); }
+.s-item .seg { margin-bottom: 12px; }
+.s-item .move { padding-left: 0; }
+.s-item .s-row { margin: 0 0 14px; }
+.s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; margin-top: 8px; }
+.s-row label { display: flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; color: var(--muted); }
+.s-row .chip { white-space: nowrap; }
+.s-row input[type=date] { padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 14px; color: var(--ink); }
+.seg { display: flex; gap: 6px; font-size: 14px; }
+.seg button {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 6px; white-space: nowrap;
+  border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); background: var(--card);
+}
+.seg button.on { background: var(--ink); color: var(--bg); box-shadow: none; font-family: var(--serif); font-weight: 700; }
+.chip { padding: 5px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 14px; color: var(--ink); }
+.chip:hover { border-color: var(--ink); }
 .sp { flex: 1; }
-.cloud { margin-top: 28px; padding: 14px; border: 1px dashed var(--line); border-radius: 14px; font-size: 14px; color: var(--muted); }
-.shared { margin-top: 28px; text-align: center; }
+
+#toast {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 10;
+  display: flex; align-items: center; gap: 16px; max-width: calc(100% - 32px); padding: 12px 18px; border-radius: 10px;
+  background: var(--ink); color: var(--bg); font-size: 15px; box-shadow: 0 6px 20px rgba(42, 36, 32, .28);
+}
+#toast button { color: inherit; font-family: var(--serif); font-weight: 700; box-shadow: inset 0 -2px 0 var(--accent); white-space: nowrap; }
+
+/* Konto und Verwaltung, ganz unten und leise / 계정과 관리, 맨 아래에 조용히 */
+.foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.link { color: var(--muted); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px; }
+.cloud { margin-top: 32px; padding: 16px; border: 1px dashed var(--line); border-radius: 10px; font-size: 14px; color: var(--muted); }
+.cloud p { margin: 0 0 12px; }
+.cloud .foot { margin-top: 0; align-items: center; }
+.shared { margin-top: 32px; text-align: center; }
 .shared + .shared { margin-top: 0; }
 .shared summary { display: inline-block; list-style: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px; }
 .shared summary::-webkit-details-marker { display: none; }
 .shared .cloud { margin-top: 6px; text-align: left; }
-.cloud p { margin: 0 0 10px; }
-.cloud .foot { margin-top: 0; align-items: center; }
 .code { color: var(--ink); letter-spacing: 1px; user-select: all; }
 </style>
 </head>
@@ -139,7 +177,7 @@ const T = {
     emptyList: '목록이 비어 있어요.', emptyStock: '아직 구입한 물건이 없어요.\n목록에서 체크하면 여기로 옮겨져요.',
     newStore: '새 장보기 목록 이름 (예: 드럭스토어)', manage: '목록 관리', delStore: n => `"${n}" 목록 삭제`,
     delStoreQ: n => `"${n}" 목록과 그 안의 항목을 모두 삭제할까요?`,
-    unsorted: '📦 정리 전', unsortedHint: '어디에 보관할지 골라 주세요.',
+    unsorted: '정리 전', unsortedHint: '어디에 보관할지 골라 주세요.',
     fridge: '냉장고', freezer: '냉동고', pantry: '실온',
     exp: '소비기한', left: n => `${n}일 남음`, today: '오늘까지', over: n => `${n}일 지남`, noDate: '기한 없음',
     note: '메모 쓰기', notePh: '메모 (예: 2개, 유기농)', noteOk: '저장', txPh: { de: '독일어 번역 고치기', ko: '한국어 번역 고치기' },
@@ -149,8 +187,8 @@ const T = {
     undo: '되돌리기', removed: '지웠어요', boughtMsg: '구입한 것으로 옮겼어요', usedMsg: '다 쓴 것으로 지웠어요',
     againMsg: '살 것으로 옮겼어요', listGone: '목록을 지웠어요',
     searchPh: '구입한 것 검색 (예: 두부, Milch)', noMatch: '찾는 물건이 없어요.', clear: '검색어 지우기',
-    banner: n => `⏰ 소비기한이 곧 끝나는 물건 ${n}개`,
-    notifOn: '🔔 알림 켜기', notifOk: '🔔 알림 켜짐', notifNo: '알림이 차단되어 있어요 (브라우저 설정에서 허용)',
+    banner: n => `소비기한이 곧 끝나는 물건 ${n}개`,
+    notifOn: '알림 켜기', notifOk: '알림 켜짐', notifNo: '알림이 차단되어 있어요 (브라우저 설정에서 허용)',
     signHint: '로그인하면 가족과 같은 목록을 함께 쓸 수 있어요.', signIn: '구글로 로그인', signOut: '로그아웃',
     houseHint: '함께 쓸 목록을 새로 만들거나, 받은 초대 코드를 입력하세요.', houseNew: '우리 집 목록 만들기', houseJoin: '초대 코드 입력',
     joinPrompt: '초대 코드를 입력하세요', badCode: '이 초대 코드로 된 목록이 없어요.',
@@ -163,7 +201,7 @@ const T = {
     emptyList: 'Die Liste ist leer.', emptyStock: 'Noch nichts gekauft.\nAbgehakte Artikel landen hier.',
     newStore: 'Name der neuen Einkaufsliste (z. B. Drogerie)', manage: 'Liste verwalten', delStore: n => `Liste „${n}“ löschen`,
     delStoreQ: n => `Liste „${n}“ mit allen Artikeln löschen?`,
-    unsorted: '📦 Noch einzuräumen', unsortedHint: 'Bitte auswählen, wo es gelagert wird.',
+    unsorted: 'Noch einzuräumen', unsortedHint: 'Bitte auswählen, wo es gelagert wird.',
     fridge: 'Kühlschrank', freezer: 'Gefrierfach', pantry: 'Vorrat',
     exp: 'Haltbar bis', left: n => n === 1 ? 'noch 1 Tag' : `noch ${n} Tage`, today: 'bis heute', over: n => n === 1 ? '1 Tag abgelaufen' : `${n} Tage abgelaufen`, noDate: 'kein Datum',
     note: 'Notiz schreiben', notePh: 'Notiz (z. B. 2 Stück, Bio)', noteOk: 'Speichern', txPh: { de: 'Übersetzung (Deutsch)', ko: 'Übersetzung (Koreanisch)' },
@@ -173,8 +211,8 @@ const T = {
     undo: 'Rückgängig', removed: 'Gelöscht', boughtMsg: 'Nach „Gekauft“ verschoben', usedMsg: 'Als aufgebraucht entfernt',
     againMsg: 'Wieder auf die Liste gesetzt', listGone: 'Liste gelöscht',
     searchPh: 'Gekauftes suchen (z. B. Milch, 두부)', noMatch: 'Nichts gefunden.', clear: 'Suche löschen',
-    banner: n => n === 1 ? '⏰ 1 Artikel läuft bald ab' : `⏰ ${n} Artikel laufen bald ab`,
-    notifOn: '🔔 Benachrichtigungen einschalten', notifOk: '🔔 Benachrichtigungen aktiv', notifNo: 'Benachrichtigungen sind blockiert (in den Browser-Einstellungen erlauben)',
+    banner: n => n === 1 ? '1 Artikel läuft bald ab' : `${n} Artikel laufen bald ab`,
+    notifOn: 'Benachrichtigungen einschalten', notifOk: 'Benachrichtigungen aktiv', notifNo: 'Benachrichtigungen sind blockiert (in den Browser-Einstellungen erlauben)',
     signHint: 'Mit Anmeldung könnt ihr dieselbe Liste gemeinsam nutzen.', signIn: 'Mit Google anmelden', signOut: 'Abmelden',
     houseHint: 'Neue gemeinsame Liste anlegen oder einen Einladungscode eingeben.', houseNew: 'Gemeinsame Liste anlegen', houseJoin: 'Einladungscode eingeben',
     joinPrompt: 'Einladungscode eingeben', badCode: 'Zu diesem Einladungscode gibt es keine Liste.',
@@ -319,7 +357,8 @@ function nameHtml(name) {
 // ---------- Zustand / 상태 ----------
 const KEY = 'shopping-list-v1';
 const LOCS = ['fridge', 'freezer', 'pantry'];
-const ICON = { fridge: '🧊', freezer: '❄️', pantry: '🧺' };
+// Lagerort als Farbpunkt / 보관 장소는 색 점으로
+const ICON = Object.fromEntries(['fridge', 'freezer', 'pantry'].map(l => [l, `<i class="dot ${l}"></i>`]));
 const FROZEN_DAYS = 90;
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 let S = load();
@@ -377,12 +416,12 @@ function render() {
   if (S.active !== 'stock' && !S.stores.some(s => s.id === S.active)) S.active = S.stores[0] ? S.stores[0].id : 'stock';
   const due = S.stock.filter(soon).length;
 
-  let h = `<header><h1>🛒 ${L.title}</h1><div class="lang">
+  let h = `<header><div><p class="date">${new Date().toLocaleDateString(S.lang === 'ko' ? 'ko-KR' : 'de-DE', { month: 'long', day: 'numeric', weekday: 'long' })}</p><h1>${L.title}</h1></div><div class="lang">
     <button data-act="lang" data-v="ko" class="${S.lang === 'ko' ? 'on' : ''}">한국어</button>
     <button data-act="lang" data-v="de" class="${S.lang === 'de' ? 'on' : ''}">Deutsch</button></div></header>`;
 
   h += '<nav class="tabs">';
-  h += `<button class="tab stock ${S.active === 'stock' ? 'on' : ''}" data-act="tab" data-v="stock">✓ ${L.stock}${S.stock.length ? `<span class="n">${S.stock.length}</span>` : ''}</button>`;
+  h += `<button class="tab stock ${S.active === 'stock' ? 'on' : ''}" data-act="tab" data-v="stock">${L.stock}${S.stock.length ? `<span class="n">${S.stock.length}</span>` : ''}</button>`;
   for (const s of S.stores) {
     const n = S.items.filter(i => i.store === s.id).length;
     h += `<button class="tab ${S.active === s.id ? 'on' : ''}" data-act="tab" data-v="${s.id}">${esc(storeName(s))}${n ? `<span class="n">${n}</span>` : ''}</button>`;
@@ -410,7 +449,7 @@ function render() {
   // Liste löschen liegt ganz unten hinter einem Aufklapper, damit man es nicht versehentlich trifft.
   // 목록 삭제는 실수로 누르지 않게 맨 아래 접힌 칸 안에.
   const cur = S.stores.find(s => s.id === S.active);
-  if (cur) h += `<details class="shared manage"><summary>⚙ ${L.manage}</summary><div class="cloud">
+  if (cur) h += `<details class="shared manage"><summary>${L.manage}</summary><div class="cloud">
     <button class="link" data-act="delStore">${L.delStore(esc(storeName(cur)))}</button></div></details>`;
   // Getippten Text und Fokus über das Neuzeichnen retten / 다시 그려도 입력 중인 글자와 포커스 유지
   const root = document.getElementById('app');
@@ -513,7 +552,7 @@ function cloudHtml(L) {
     <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div>`;
   // Verbunden: nur eine kleine Zeile; Code und Abmelden erst nach Antippen.
   // 연결된 뒤에는 작은 한 줄만. 초대 코드와 로그아웃은 눌러야 보임.
-  return `<details class="shared"><summary>👥 ${L.shared}</summary><div class="cloud">
+  return `<details class="shared"><summary>${L.shared}</summary><div class="cloud">
     <p>${L.codeLabel} <b class="code">${esc(S.house)}</b></p><div class="foot">
     <button class="chip" data-act="copyCode">${L.copy}</button>
     <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div></details>`;
@@ -531,7 +570,7 @@ function renderStock(L, due) {
     const xs = S.stock.filter(x => (LOCS.includes(x.loc) ? x.loc : null) === loc)
       .sort((a, b) => (a.expires || '9999').localeCompare(b.expires || '9999'));
     if (!xs.length) continue;
-    h += `<section class="stock-sec"><h2>${loc ? ICON[loc] + ' ' + L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
+    h += `<section class="stock-sec"><h2>${loc ? ICON[loc] : '<i class="dot"></i>'}${loc ? L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
     if (!loc) h += `<p class="hint">${L.unsortedHint}</p>`;
     h += '<ul>' + xs.map(x => stockItem(x, L)).join('') + '</ul></section>';
   }
@@ -570,7 +609,7 @@ function stockItem(x, L) {
     ${open ? `${editForm(x, L)}
       <div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
       <span class="sp"></span>
-      <button class="chip" data-act="split" data-v="${x.id}">✂ ${L.split}</button>
+      <button class="chip" data-act="split" data-v="${x.id}">${L.split}</button>
       <button class="chip" data-act="again" data-v="${x.id}">↩ ${L.again}</button>
       <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div>` : ''}</li>`;
 }
