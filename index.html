@@ -312,12 +312,12 @@ function render() {
     <button data-act="lang" data-v="de" class="${S.lang === 'de' ? 'on' : ''}">Deutsch</button></div></header>`;
 
   h += '<nav class="tabs">';
+  h += `<button class="tab stock ${S.active === 'stock' ? 'on' : ''}" data-act="tab" data-v="stock">✓ ${L.stock}${S.stock.length ? `<span class="n">${S.stock.length}</span>` : ''}</button>`;
   for (const s of S.stores) {
     const n = S.items.filter(i => i.store === s.id).length;
     h += `<button class="tab ${S.active === s.id ? 'on' : ''}" data-act="tab" data-v="${s.id}">${esc(storeName(s))}${n ? `<span class="n">${n}</span>` : ''}</button>`;
   }
-  h += `<button class="tab" data-act="addStore">${L.addStore}</button>`;
-  h += `<button class="tab stock ${S.active === 'stock' ? 'on' : ''}" data-act="tab" data-v="stock">✓ ${L.stock}${S.stock.length ? `<span class="n">${S.stock.length}</span>` : ''}</button></nav>`;
+  h += `<button class="tab" data-act="addStore">${L.addStore}</button></nav>`;
 
   if (due && S.active !== 'stock') h += `<button class="banner" data-act="tab" data-v="stock">${L.banner(due)}</button>`;
 
