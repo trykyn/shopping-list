@@ -3,31 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f7f1e6" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1d1a17" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f1f3f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12141a" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&display=swap">
 <title>장보기</title>
 <style>
-/* Aussehen: Notizblock auf warmem Papier. Tinte als Hauptfarbe, Tomatenrot nur für Dringendes, Grün nur für "in Ordnung".
-   모양: 따뜻한 종이 위의 메모장. 기본은 먹색, 급한 것만 토마토색, 괜찮은 것만 초록. */
+/* Aussehen: ruhige Karten. Hellgrauer Grund, weiße Karten, ein einziges Blau; Farbe sonst nur für die Haltbarkeit.
+   Die Regeln dazu stehen am Ende dieses Blocks ("Karten") und gehen den älteren Grundregeln davor vor.
+   모양: 차분한 카드. 연회색 바탕, 흰 카드, 파란색 하나. 그 밖의 색은 소비기한 표시에만.
+   해당 규칙은 이 블록 맨 끝("Karten")에 있고, 앞쪽 기본 규칙보다 우선함. */
 :root {
-  --bg: #f7f1e6; --card: #fffdf8; --ink: #2a2420; --muted: #675d53; --line: #cfc3ad;
-  --accent: #c4432b; --accent-ink: #fffaf2; --soft: #f1e6d3; --ok: #3f7a5a;
-  --warn: #c4432b; --warn-bg: #f8e3cf; --bad: #fffaf2; --bad-bg: #c4432b;
-  --fridge: #5d9fd6; --freezer: #3b4f8f; --pantry: #c9983f;
-  --serif: "Gowun Batang", "Noto Serif KR", "Apple SD Gothic Neo", Georgia, serif;
+  --bg: #f1f3f8; --card: #ffffff; --ink: #141821; --muted: #5d6676; --line: #e4e7ef;
+  --accent: #2f5bea; --accent-ink: #ffffff; --soft: #e8eeff; --ok: #1d8a5b; --ok-bg: #e6f5ee;
+  --warn: #c2410c; --warn-bg: #ffefe3; --bad: #ffffff; --bad-bg: #d92d20;
+  --fridge: #2f5bea; --freezer: #6d4fe0; --pantry: #b7791f;
+  --tabbar: #e2e6ef; --field: #f6f7fb; --ring: #b4bccb;
+  --shadow: 0 1px 2px rgba(20, 24, 33, .06), 0 4px 14px rgba(20, 24, 33, .04);
   --sans: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --serif: var(--sans);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1d1a17; --card: #27231f; --ink: #f1eadf; --muted: #bdb1a3; --line: #4a423b;
-    --accent: #f0805f; --accent-ink: #2b1209; --soft: #332b25; --ok: #7cc49c;
-    --warn: #f0805f; --warn-bg: #3b271f; --bad: #2b1209; --bad-bg: #f0805f;
-    --fridge: #7db5e3; --freezer: #8497d6; --pantry: #dcb264;
+    --bg: #12141a; --card: #1d2029; --ink: #eef0f5; --muted: #a2abbb; --line: #2c303b;
+    --accent: #7d97ff; --accent-ink: #0d1330; --soft: #232a45; --ok: #5fcf9b; --ok-bg: #16342a;
+    --warn: #ffa36b; --warn-bg: #3a2618; --bad: #ffffff; --bad-bg: #d9463a;
+    --fridge: #7d97ff; --freezer: #a996ff; --pantry: #e0b160;
+    --tabbar: #232732; --field: #262a35; --ring: #586074;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
   }
 }
 * { box-sizing: border-box; }
@@ -170,6 +174,51 @@ h2 .ic { width: 1.25em; height: 1.25em; margin-right: 0; stroke-width: 2.1; }
 .shared summary::-webkit-details-marker { display: none; }
 .shared .cloud { margin-top: 6px; text-align: left; }
 .code { color: var(--ink); letter-spacing: 1px; user-select: all; }
+
+/* ---------- Karten / 카드 ---------- */
+h1 { font-size: 27px; font-weight: 800; letter-spacing: -.03em; white-space: nowrap; }
+.lang { flex: none; }
+h1 .ic { color: var(--accent); }
+.lang button.on { border-bottom-color: var(--accent); color: var(--accent); }
+/* Reiter: grauer Balken, der gewählte liegt weiß obenauf / 탭: 회색 띠, 고른 탭만 흰색 */
+.tabs { border-bottom: 0; gap: 4px; background: var(--tabbar); border-radius: 13px; padding: 4px; margin: 0 0 16px; }
+.tab { padding: 8px 13px; border-radius: 10px; border-bottom: 0; font-size: 15px; }
+.tab.on { background: var(--card); box-shadow: 0 1px 3px rgba(20, 24, 33, .14); border-bottom: 0; }
+.tab .n { color: var(--accent); vertical-align: 0; margin-left: 5px; }
+.banner { border-left: 0; border-radius: 13px; color: var(--warn); }
+.banner .ic { color: var(--warn); }
+.add { align-items: stretch; }
+.add input, .search input {
+  background: var(--card); border: 1px solid var(--line); border-radius: 13px; padding: 12px 14px; box-shadow: 0 1px 2px rgba(20, 24, 33, .05);
+}
+.search input { padding-right: 40px; }
+.search .x { right: 6px; }
+.add input:focus, .search input:focus { border-color: var(--accent); }
+.add button, .btn { background: var(--accent); color: var(--accent-ink); border-radius: 13px; }
+.btn.ghost { color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
+ul { background: var(--card); border-radius: 16px; padding: 0 16px; box-shadow: var(--shadow); }
+li:last-child { border-bottom: 0; }
+h2 { border-bottom: 0; font-size: 15px; color: var(--muted); margin: 26px 2px 8px; padding: 0; }
+li input[type=checkbox] { border: 1.5px solid var(--ring); border-radius: 50%; width: 26px; height: 26px; }
+li input[type=checkbox]:checked { background-color: var(--accent); border-color: var(--accent); }
+.seg button { border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); background: var(--field); }
+.seg { gap: 4px; }
+.seg button { flex: 1 1 auto; min-width: 0; padding: 8px 4px; gap: 4px; font-size: 14px; }
+.seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.s-item { display: flow-root; }
+.s-item .move input { flex-basis: 96px; }
+.alt { display: inline-block; }
+.chip, .sugg .chip { border: 0; background: var(--soft); color: var(--accent); border-radius: 999px; font-weight: 600; }
+.note { color: var(--accent); background: var(--soft); border-radius: 6px; padding: 1px 7px; }
+.note::before { content: none; }
+.badge { background: var(--ok-bg); padding: 2px 9px; border-radius: 999px; font-size: 14px; }
+.badge.warn { background: var(--warn-bg); box-shadow: none; }
+.badge.bad { background: var(--bad-bg); border-radius: 999px; padding: 2px 9px; }
+.badge.none { background: none; }
+.move input, .s-row input[type=date] { background: var(--field); }
+.cloud { border: 0; background: var(--card); border-radius: 16px; box-shadow: var(--shadow); }
+.shared .cloud { margin-top: 6px; }
+#toast button { box-shadow: none; text-decoration: underline; text-underline-offset: 3px; }
 </style>
 </head>
 <body>
