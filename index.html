@@ -9,29 +9,29 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&display=swap">
 <title>장보기</title>
 <style>
 /* Aussehen: Notizblock auf warmem Papier. Tinte als Hauptfarbe, Tomatenrot nur für Dringendes, Grün nur für "in Ordnung".
    모양: 따뜻한 종이 위의 메모장. 기본은 먹색, 급한 것만 토마토색, 괜찮은 것만 초록. */
 :root {
-  --bg: #f7f1e6; --card: #fffdf8; --ink: #2a2420; --muted: #8b8074; --line: #dfd4c1;
+  --bg: #f7f1e6; --card: #fffdf8; --ink: #2a2420; --muted: #675d53; --line: #cfc3ad;
   --accent: #c4432b; --accent-ink: #fffaf2; --soft: #f1e6d3; --ok: #3f7a5a;
   --warn: #c4432b; --warn-bg: #f8e3cf; --bad: #fffaf2; --bad-bg: #c4432b;
   --fridge: #5d9fd6; --freezer: #3b4f8f; --pantry: #c9983f;
   --serif: "Gowun Batang", "Noto Serif KR", "Apple SD Gothic Neo", Georgia, serif;
-  --sans: "Gowun Dodum", system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --sans: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1d1a17; --card: #27231f; --ink: #f1eadf; --muted: #a09385; --line: #3d3630;
+    --bg: #1d1a17; --card: #27231f; --ink: #f1eadf; --muted: #bdb1a3; --line: #4a423b;
     --accent: #f0805f; --accent-ink: #2b1209; --soft: #332b25; --ok: #7cc49c;
     --warn: #f0805f; --warn-bg: #3b271f; --bad: #2b1209; --bad-bg: #f0805f;
     --fridge: #7db5e3; --freezer: #8497d6; --pantry: #dcb264;
   }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 var(--sans); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 var(--sans); -webkit-text-size-adjust: 100%; }
 main { max-width: 540px; margin: 0 auto; padding: 22px 20px 96px; }
 [hidden] { display: none !important; }
 button, input { font: inherit; color: inherit; }
@@ -40,31 +40,31 @@ button { cursor: pointer; border: 0; background: none; padding: 0; }
 
 /* Kopf: Datum, großer Titel, Sprachwahl / 머리: 날짜, 큰 제목, 언어 */
 header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-.date { margin: 0 0 2px; font-size: 13px; color: var(--muted); letter-spacing: .02em; }
+.date { margin: 0 0 2px; font-size: 14px; color: var(--muted); letter-spacing: .02em; }
 h1 { font: 700 32px/1.15 var(--serif); letter-spacing: -.02em; margin: 0; }
 .lang { display: flex; gap: 12px; padding-bottom: 6px; }
-.lang button { font-size: 13px; color: var(--muted); padding: 4px 0; border-bottom: 2px solid transparent; }
-.lang button.on { color: var(--ink); border-bottom-color: var(--ink); }
+.lang button { font-size: 15px; color: var(--muted); padding: 4px 0; border-bottom: 2px solid transparent; }
+.lang button.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
 
 /* Reiter als unterstrichene Wörter / 탭은 밑줄 친 글자로 */
 .tabs { display: flex; gap: 22px; overflow-x: auto; margin: 0 -20px 18px; padding: 0 20px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { flex: none; padding: 10px 0 8px; white-space: nowrap; font-size: 16px; color: var(--muted); border-bottom: 3px solid transparent; }
+.tab { flex: none; padding: 10px 0 8px; white-space: nowrap; font-size: 17px; color: var(--muted); border-bottom: 3px solid transparent; }
 .tab.on { color: var(--ink); font-family: var(--serif); font-weight: 700; border-bottom-color: var(--ink); }
-.tab .n { font: 400 12px var(--sans); color: var(--accent); margin-left: 3px; vertical-align: 7px; }
+.tab .n { font: 700 13px var(--sans); color: var(--accent); margin-left: 3px; vertical-align: 7px; }
 
 .banner {
-  display: block; width: 100%; text-align: left; margin-bottom: 16px; padding: 10px 14px; font-size: 15px;
+  display: block; width: 100%; text-align: left; margin-bottom: 16px; padding: 11px 14px; font-size: 16px; font-weight: 600;
   background: var(--warn-bg); color: var(--ink); border-left: 3px solid var(--accent); border-radius: 2px 8px 8px 2px;
 }
 
 /* Eingabe: eine Linie wie im Heft / 입력 칸은 공책 줄처럼 */
 .add { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
 .add input, .search input {
-  flex: 1; min-width: 0; width: 100%; padding: 10px 2px; font-size: 17px; background: none; border: 0; border-radius: 0;
+  flex: 1; min-width: 0; width: 100%; padding: 10px 2px; font-size: 18px; background: none; border: 0; border-radius: 0;
   border-bottom: 2px solid var(--ink); outline: 0; -webkit-appearance: none; appearance: none;
 }
-.add input::placeholder, .search input::placeholder { color: var(--muted); opacity: .8; }
+.add input::placeholder, .search input::placeholder { color: var(--muted); opacity: 1; }
 .add input:focus, .search input:focus { border-bottom-color: var(--accent); }
 .add button, .btn {
   padding: 0 18px; min-height: 44px; border-radius: 10px; background: var(--ink); color: var(--bg);
@@ -72,17 +72,17 @@ h1 { font: 700 32px/1.15 var(--serif); letter-spacing: -.02em; margin: 0; }
 }
 .btn.ghost { background: none; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
 .search { position: relative; margin-bottom: 6px; }
-.search input { padding-right: 40px; border-bottom-width: 1px; border-bottom-color: var(--line); font-size: 16px; }
+.search input { padding-right: 40px; border-bottom-width: 1px; border-bottom-color: var(--muted); font-size: 17px; }
 .search input::-webkit-search-cancel-button { display: none; }
 .search .x { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
 
-.sugg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+.sugg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; font-size: 14px; color: var(--muted); }
 .sugg span { margin-right: 2px; }
-.sugg .chip { border-style: dashed; }
+.sugg .chip { border-style: dashed; border-color: var(--muted); }
 
 /* Listen: gestrichelte Zeilen statt Kästen / 목록은 상자 대신 점선 줄 */
 ul { list-style: none; margin: 0; padding: 0; }
-li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px dashed var(--line); }
+li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 li.flash { background: var(--soft); }
 li input[type=checkbox] {
   -webkit-appearance: none; appearance: none; flex: none; width: 24px; height: 24px; margin: 0; cursor: pointer;
@@ -96,13 +96,13 @@ li input[type=checkbox]:checked {
   li input[type=checkbox]:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%231d1a17' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 }
 .pick { flex: 1; min-width: 0; min-height: 32px; text-align: left; }
-.name { overflow-wrap: anywhere; font-size: 17px; }
-.alt { color: var(--muted); font-size: 13px; margin-left: 6px; }
-.note { font-size: 13px; color: var(--accent); margin-left: 8px; white-space: nowrap; }
+.name { overflow-wrap: anywhere; font-size: 18px; font-weight: 600; }
+.alt { color: var(--muted); font-size: 15px; font-weight: 400; margin-left: 6px; }
+.note { font-size: 15px; font-weight: 600; color: var(--accent); margin-left: 8px; white-space: nowrap; }
 .note::before { content: "· "; color: var(--muted); }
-.x { color: var(--muted); padding: 6px 8px; font-size: 18px; line-height: 1; border-radius: 8px; }
+.x { color: var(--muted); padding: 6px 8px; font-size: 20px; line-height: 1; border-radius: 8px; }
 .x:hover { color: var(--ink); }
-.move { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); padding: 0 0 4px 36px; }
+.move { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); padding: 0 0 4px 36px; }
 .move input {
   flex: 1 1 130px; min-width: 0; padding: 7px 10px; font-size: 16px; border-radius: 8px;
   border: 1px solid var(--line); background: var(--card);
@@ -111,35 +111,43 @@ li input[type=checkbox]:checked {
 .empty { color: var(--muted); text-align: center; padding: 44px 12px; font-family: var(--serif); }
 
 /* Gekauft: Abschnitte mit Tintenstrich, Lagerort als Farbpunkt / 구입한 것: 먹선 아래 구역, 보관 장소는 색 점 */
-h2 { display: flex; align-items: baseline; gap: 8px; font: 700 18px/1.3 var(--serif); margin: 30px 0 0; padding-bottom: 7px; border-bottom: 2px solid var(--ink); }
-h2 .n { font: 400 13px var(--sans); color: var(--muted); }
-.hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
-.dot { display: inline-block; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); align-self: center; }
-.dot.fridge { background: var(--fridge); }
-.dot.freezer { background: var(--freezer); }
-.dot.pantry { background: var(--pantry); }
+h2 { display: flex; align-items: baseline; gap: 8px; font: 700 20px/1.3 var(--serif); margin: 30px 0 0; padding-bottom: 7px; border-bottom: 2px solid var(--ink); }
+h2 .n { font: 600 14px var(--sans); color: var(--muted); }
+.hint { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+.ic {
+  display: inline-block; flex: none; width: 1.2em; height: 1.2em; vertical-align: -.22em; margin-right: .35em; align-self: center;
+  fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
+}
+.ic.fridge { color: var(--fridge); }
+.ic.freezer { color: var(--freezer); }
+.ic.pantry { color: var(--pantry); }
+.seg .ic { margin-right: 0; }
+.seg button.on .ic { color: inherit; }
+h1 .ic { width: .9em; height: .9em; vertical-align: -.08em; margin-right: .25em; }
+h2 .ic { width: 1.25em; height: 1.25em; margin-right: 0; stroke-width: 2.1; }
+.banner .ic { color: var(--accent); }
 .s-item { display: block; padding: 0; }
 .s-top { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 0; min-height: 46px; }
 .s-top .name { flex: 1; min-width: 0; }
-.chev { color: var(--muted); font-size: 11px; }
-.badge { flex: none; font-size: 13px; color: var(--ok); font-variant-numeric: tabular-nums; }
+.chev { color: var(--muted); font-size: 12px; }
+.badge { flex: none; font-size: 15px; font-weight: 600; color: var(--ok); font-variant-numeric: tabular-nums; }
 .badge.warn { color: var(--warn); box-shadow: inset 0 -6px 0 var(--warn-bg); }
 .badge.bad { color: var(--bad); background: var(--bad-bg); padding: 1px 7px; border-radius: 5px; }
-.badge.none { color: var(--muted); }
+.badge.none { color: var(--muted); font-weight: 400; }
 .s-item .seg { margin-bottom: 12px; }
 .s-item .move { padding-left: 0; }
 .s-item .s-row { margin: 0 0 14px; }
-.s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; margin-top: 8px; }
+.s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; margin-top: 8px; }
 .s-row label { display: flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; color: var(--muted); }
 .s-row .chip { white-space: nowrap; }
-.s-row input[type=date] { padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 14px; color: var(--ink); }
-.seg { display: flex; gap: 6px; font-size: 14px; }
+.s-row input[type=date] { padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 15px; color: var(--ink); }
+.seg { display: flex; gap: 6px; font-size: 15px; }
 .seg button {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 6px; white-space: nowrap;
-  border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); background: var(--card);
+  border-radius: 8px; box-shadow: inset 0 0 0 1px var(--muted); background: var(--card); min-height: 40px;
 }
 .seg button.on { background: var(--ink); color: var(--bg); box-shadow: none; font-family: var(--serif); font-weight: 700; }
-.chip { padding: 5px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 14px; color: var(--ink); }
+.chip { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--muted); background: var(--card); font-size: 15px; color: var(--ink); }
 .chip:hover { border-color: var(--ink); }
 .sp { flex: 1; }
 
@@ -152,13 +160,13 @@ h2 .n { font: 400 13px var(--sans); color: var(--muted); }
 
 /* Konto und Verwaltung, ganz unten und leise / 계정과 관리, 맨 아래에 조용히 */
 .foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.link { color: var(--muted); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px; }
-.cloud { margin-top: 32px; padding: 16px; border: 1px dashed var(--line); border-radius: 10px; font-size: 14px; color: var(--muted); }
+.link { color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px; }
+.cloud { margin-top: 32px; padding: 16px; border: 1px dashed var(--muted); border-radius: 10px; font-size: 15px; color: var(--muted); }
 .cloud p { margin: 0 0 12px; }
 .cloud .foot { margin-top: 0; align-items: center; }
 .shared { margin-top: 32px; text-align: center; }
 .shared + .shared { margin-top: 0; }
-.shared summary { display: inline-block; list-style: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px; }
+.shared summary { display: inline-block; list-style: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 8px; }
 .shared summary::-webkit-details-marker { display: none; }
 .shared .cloud { margin-top: 6px; text-align: left; }
 .code { color: var(--ink); letter-spacing: 1px; user-select: all; }
@@ -357,8 +365,22 @@ function nameHtml(name) {
 // ---------- Zustand / 상태 ----------
 const KEY = 'shopping-list-v1';
 const LOCS = ['fridge', 'freezer', 'pantry'];
-// Lagerort als Farbpunkt / 보관 장소는 색 점으로
-const ICON = Object.fromEntries(['fridge', 'freezer', 'pantry'].map(l => [l, `<i class="dot ${l}"></i>`]));
+// Gezeichnete Symbole (Linien, 24er Raster) statt Emoji; die Farbe kommt aus dem Text bzw. dem Lagerort.
+// 이모지 대신 선으로 그린 아이콘. 색은 글자색이나 보관 장소 색을 따름.
+const SHAPES = {
+  fridge: '<rect x="6" y="3" width="12" height="18" rx="2.5"/><path d="M6 10h12M9.5 6v1.5M9.5 13v3"/>',
+  freezer: '<path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9M9.5 4.5L12 7l2.5-2.5M9.5 19.5L12 17l2.5 2.5"/>',
+  pantry: '<path d="M3.5 10h17l-1.6 9.5H5.1zM8 10l3-6M16 10l-3-6M9.5 13.5v2.5M14.5 13.5v2.5"/>',
+  box: '<path d="M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  cart: '<path d="M3 4.5h2.6l2.3 9.5h9.3l1.6-7H6.4"/><circle cx="9.3" cy="18.3" r="1.4"/><circle cx="16.3" cy="18.3" r="1.4"/>',
+  people: '<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M15.5 5.8a3 3 0 010 5.4M17.5 14.4c1.6.8 2.6 2.4 3 4.6"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.500v2.500M3 12h2.500M18.5 12H21M5.6 5.600l1.8 1.800M16.6 16.600l1.8 1.800M5.6 18.400l1.8-1.800M16.6 7.400l1.8-1.8"/>',
+  bell: '<path d="M6 16.500V11a6 6 0 0112 0v5.500l1.5 2h-15zM10 20.500a2.1 2.1 0 004 0"/>',
+};
+const ic = name => `<svg class="ic ${name}" viewBox="0 0 24 24" aria-hidden="true">${SHAPES[name]}</svg>`;
+const ICON = Object.fromEntries(['fridge', 'freezer', 'pantry'].map(l => [l, ic(l)]));
+
 const FROZEN_DAYS = 90;
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 let S = load();
@@ -416,7 +438,7 @@ function render() {
   if (S.active !== 'stock' && !S.stores.some(s => s.id === S.active)) S.active = S.stores[0] ? S.stores[0].id : 'stock';
   const due = S.stock.filter(soon).length;
 
-  let h = `<header><div><p class="date">${new Date().toLocaleDateString(S.lang === 'ko' ? 'ko-KR' : 'de-DE', { month: 'long', day: 'numeric', weekday: 'long' })}</p><h1>${L.title}</h1></div><div class="lang">
+  let h = `<header><div><p class="date">${new Date().toLocaleDateString(S.lang === 'ko' ? 'ko-KR' : 'de-DE', { month: 'long', day: 'numeric', weekday: 'long' })}</p><h1>${ic('cart')}${L.title}</h1></div><div class="lang">
     <button data-act="lang" data-v="ko" class="${S.lang === 'ko' ? 'on' : ''}">한국어</button>
     <button data-act="lang" data-v="de" class="${S.lang === 'de' ? 'on' : ''}">Deutsch</button></div></header>`;
 
@@ -428,7 +450,7 @@ function render() {
   }
   h += `<button class="tab" data-act="addStore">${L.addStore}</button></nav>`;
 
-  if (due && S.active !== 'stock') h += `<button class="banner" data-act="tab" data-v="stock">${L.banner(due)}</button>`;
+  if (due && S.active !== 'stock') h += `<button class="banner" data-act="tab" data-v="stock">${ic('clock')}${L.banner(due)}</button>`;
 
   if (S.active === 'stock') h += renderStock(L, due);
   else {
@@ -449,7 +471,7 @@ function render() {
   // Liste löschen liegt ganz unten hinter einem Aufklapper, damit man es nicht versehentlich trifft.
   // 목록 삭제는 실수로 누르지 않게 맨 아래 접힌 칸 안에.
   const cur = S.stores.find(s => s.id === S.active);
-  if (cur) h += `<details class="shared manage"><summary>${L.manage}</summary><div class="cloud">
+  if (cur) h += `<details class="shared manage"><summary>${ic('gear')}${L.manage}</summary><div class="cloud">
     <button class="link" data-act="delStore">${L.delStore(esc(storeName(cur)))}</button></div></details>`;
   // Getippten Text und Fokus über das Neuzeichnen retten / 다시 그려도 입력 중인 글자와 포커스 유지
   const root = document.getElementById('app');
@@ -552,14 +574,14 @@ function cloudHtml(L) {
     <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div>`;
   // Verbunden: nur eine kleine Zeile; Code und Abmelden erst nach Antippen.
   // 연결된 뒤에는 작은 한 줄만. 초대 코드와 로그아웃은 눌러야 보임.
-  return `<details class="shared"><summary>${L.shared}</summary><div class="cloud">
+  return `<details class="shared"><summary>${ic('people')}${L.shared}</summary><div class="cloud">
     <p>${L.codeLabel} <b class="code">${esc(S.house)}</b></p><div class="foot">
     <button class="chip" data-act="copyCode">${L.copy}</button>
     <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div></details>`;
 }
 
 function renderStock(L, due) {
-  let h = due ? `<div class="banner">${L.banner(due)}</div>` : '';
+  let h = due ? `<div class="banner">${ic('clock')}${L.banner(due)}</div>` : '';
   if (!S.stock.length) return h + `<p class="empty">${esc(L.emptyStock).replace('\n', '<br>')}</p>`;
   // Suchfeld: filtert beim Tippen, ohne neu zu zeichnen (sonst bricht die koreanische Eingabe ab).
   // 검색 칸: 입력하는 대로 걸러 냄. 다시 그리지 않음 (다시 그리면 한글 조합이 끊김).
@@ -570,16 +592,16 @@ function renderStock(L, due) {
     const xs = S.stock.filter(x => (LOCS.includes(x.loc) ? x.loc : null) === loc)
       .sort((a, b) => (a.expires || '9999').localeCompare(b.expires || '9999'));
     if (!xs.length) continue;
-    h += `<section class="stock-sec"><h2>${loc ? ICON[loc] : '<i class="dot"></i>'}${loc ? L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
+    h += `<section class="stock-sec"><h2>${loc ? ICON[loc] : ic('box')}${loc ? L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
     if (!loc) h += `<p class="hint">${L.unsortedHint}</p>`;
     h += '<ul>' + xs.map(x => stockItem(x, L)).join('') + '</ul></section>';
   }
   h += `<p class="empty" id="no-match" hidden>${L.noMatch}</p>`;
   if ('Notification' in window) {
     const p = Notification.permission;
-    h += `<div class="foot">${p === 'granted' ? `<span class="link" style="text-decoration:none">${L.notifOk}</span>`
+    h += `<div class="foot">${p === 'granted' ? `<span class="link" style="text-decoration:none">${ic('bell')}${L.notifOk}</span>`
       : p === 'denied' ? `<span class="link" style="text-decoration:none">${L.notifNo}</span>`
-      : `<button class="btn ghost" data-act="notif">${L.notifOn}</button>`}</div>`;
+      : `<button class="btn ghost" data-act="notif">${ic('bell')}${L.notifOn}</button>`}</div>`;
   }
   return h;
 }
