@@ -94,6 +94,10 @@ li input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent)
 .chip:hover { background: var(--soft); }
 .sp { flex: 1; }
 .cloud { margin-top: 28px; padding: 14px; border: 1px dashed var(--line); border-radius: 14px; font-size: 14px; color: var(--muted); }
+.shared { margin-top: 28px; text-align: center; }
+.shared summary { display: inline-block; list-style: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px; }
+.shared summary::-webkit-details-marker { display: none; }
+.shared .cloud { margin-top: 6px; text-align: left; }
 .cloud p { margin: 0 0 10px; }
 .cloud .foot { margin-top: 0; align-items: center; }
 .code { color: var(--ink); letter-spacing: 1px; user-select: all; }
@@ -121,7 +125,7 @@ const T = {
     signHint: '로그인하면 가족과 같은 목록을 함께 쓸 수 있어요.', signIn: '구글로 로그인', signOut: '로그아웃',
     houseHint: '함께 쓸 목록을 새로 만들거나, 받은 초대 코드를 입력하세요.', houseNew: '우리 집 목록 만들기', houseJoin: '초대 코드 입력',
     joinPrompt: '초대 코드를 입력하세요', badCode: '이 초대 코드로 된 목록이 없어요.',
-    shared: '함께 쓰는 중 · 초대 코드', copy: '코드 복사', cloudErr: '연결에 문제가 생겼어요.',
+    shared: '함께 쓰는 중', codeLabel: '초대 코드', copy: '코드 복사', cloudErr: '연결에 문제가 생겼어요.',
     nTitle: '소비기한 알림', nBody: (n, d) => d < 0 ? `${n} — 소비기한이 지났어요` : d === 0 ? `${n} — 오늘까지예요` : `${n} — ${d}일 남았어요`,
   },
   de: {
@@ -139,7 +143,7 @@ const T = {
     signHint: 'Mit Anmeldung könnt ihr dieselbe Liste gemeinsam nutzen.', signIn: 'Mit Google anmelden', signOut: 'Abmelden',
     houseHint: 'Neue gemeinsame Liste anlegen oder einen Einladungscode eingeben.', houseNew: 'Gemeinsame Liste anlegen', houseJoin: 'Einladungscode eingeben',
     joinPrompt: 'Einladungscode eingeben', badCode: 'Zu diesem Einladungscode gibt es keine Liste.',
-    shared: 'Gemeinsame Liste · Einladungscode', copy: 'Code kopieren', cloudErr: 'Die Verbindung hat nicht geklappt.',
+    shared: 'Gemeinsame Liste', codeLabel: 'Einladungscode', copy: 'Code kopieren', cloudErr: 'Die Verbindung hat nicht geklappt.',
     nTitle: 'Haltbarkeit', nBody: (n, d) => d < 0 ? `${n} – ist abgelaufen` : d === 0 ? `${n} – nur noch heute haltbar` : d === 1 ? `${n} – noch 1 Tag haltbar` : `${n} – noch ${d} Tage haltbar`,
   },
 };
@@ -365,9 +369,12 @@ function cloudHtml(L) {
     <button class="btn" data-act="houseNew">${L.houseNew}</button>
     <button class="btn ghost" data-act="houseJoin">${L.houseJoin}</button>
     <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div>`;
-  return `<div class="cloud"><p>${L.shared} <b class="code">${esc(S.house)}</b></p><div class="foot">
+  // Verbunden: nur eine kleine Zeile; Code und Abmelden erst nach Antippen.
+  // 연결된 뒤에는 작은 한 줄만. 초대 코드와 로그아웃은 눌러야 보임.
+  return `<details class="shared"><summary>👥 ${L.shared}</summary><div class="cloud">
+    <p>${L.codeLabel} <b class="code">${esc(S.house)}</b></p><div class="foot">
     <button class="chip" data-act="copyCode">${L.copy}</button>
-    <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div>`;
+    <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div></details>`;
 }
 
 function renderStock(L, due) {
