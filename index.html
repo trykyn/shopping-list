@@ -34,7 +34,8 @@
     --shadow: 0 1px 2px rgba(0, 0, 0, .3);
   }
 }
-* { box-sizing: border-box; }
+/* touch-action: zweimal Tippen auf dieselbe Stelle soll nicht vergrößern / 같은 곳을 두 번 눌러도 확대되지 않게 */
+* { box-sizing: border-box; touch-action: manipulation; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 var(--sans); -webkit-text-size-adjust: 100%; }
 main { max-width: 540px; margin: 0 auto; padding: 22px 20px 96px; }
 [hidden] { display: none !important; }
@@ -220,12 +221,16 @@ li input[type=checkbox]:checked { background-color: var(--accent); border-color:
 .shared .cloud { margin-top: 6px; }
 #toast button { box-shadow: none; text-decoration: underline; text-underline-offset: 3px; }
 /* Aufgeklappter Artikel in "Gekauft" / 구입한 것에서 펼친 항목 */
-.s-edit { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.s-edit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-bottom: 10px; }
 .fld { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 13px; color: var(--muted); }
 .fld input {
   width: 100%; min-width: 0; height: 42px; padding: 0 10px; font-size: 16px; color: var(--ink);
   border: 1px solid var(--line); border-radius: 10px; background: var(--field);
 }
+/* iPhone gibt Datumsfeldern eine eigene Mindestbreite; ohne das ragt das Feld über die Karte hinaus.
+   아이폰은 날짜 칸에 자체 최소 너비를 줘서, 이게 없으면 칸이 카드 밖으로 나감. */
+.fld input[type=date] { display: block; max-width: 100%; -webkit-appearance: none; appearance: none; line-height: 40px; }
+.fld input[type=date]::-webkit-date-and-time-value { text-align: left; }
 .fld input:focus { outline: 0; border-color: var(--accent); }
 .s-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
 .s-acts button {
