@@ -287,7 +287,7 @@ const ICON = { fridge: '🧊', freezer: '❄️', pantry: '🧺' };
 const FROZEN_DAYS = 90;
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 let S = load();
-// memo: zuletzt gewählter Lagerort je Artikelname / 물건 이름별로 마지막에 고른 보관 장소
+// memo: Artikelnamen, die zuletzt im Vorrat lagen / 지난번에 실온에 둔 물건 이름
 S.memo = S.memo || [];
 // Schlüssel dafür: der Name auf Deutsch, als Zeichencodes (taugt als Feldname in der geteilten Liste).
 // 그 열쇠: 독일어 이름을 문자 코드로 바꾼 것(공유 목록의 필드 이름으로 쓸 수 있게).
@@ -460,9 +460,9 @@ const actions = {
     if (!i) return;
     S.items = S.items.filter(x => x !== i);
     const bought = iso(new Date()), days = guessDays(i.name) || guessDays((S.tx && S.tx[clean(i.name)]) || '');
-    // Schon einmal eingeräumt? Dann gleich wieder an denselben Ort. / 전에 정리한 적 있으면 같은 곳으로 바로.
+    // Lag es zuletzt im Vorrat? Dann gleich wieder dorthin. / 지난번에 실온에 뒀으면 바로 실온으로.
     const m = S.memo.find(m => m.id === memoId(i.name));
-    const x = { id: i.id, name: i.name, store: i.store, loc: m ? m.loc : null, bought, days, expires: null };
+    const x = { id: i.id, name: i.name, store: i.store, loc: m && m.loc === 'pantry' ? 'pantry' : null, bought, days, expires: null };
     if (days) x.expires = addDays(bought, shelfDays(x));
     S.stock.push(x);
   },
@@ -473,8 +473,11 @@ const actions = {
     const x = S.stock.find(x => x.id === id);
     if (!x) return;
     x.loc = loc;
-    const key = memoId(x.name), m = S.memo.find(m => m.id === key);
-    if (m) m.loc = loc; else S.memo.push({ id: key, loc });
+    // Nur "Vorrat" wird gemerkt; Kühlschrank und Gefrierfach wählt man jedes Mal neu.
+    // 실온만 기억. 냉장고·냉동고는 매번 직접 고름.
+    const key = memoId(x.name);
+    S.memo = S.memo.filter(m => m.id !== key);
+    if (loc === 'pantry') S.memo.push({ id: key, loc });
     if (!x.manual && x.days) { x.expires = addDays(x.bought, shelfDays(x)); }
   },
   exp(v, el) {
