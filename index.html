@@ -99,6 +99,7 @@ li { flex-wrap: wrap; }
 .sp { flex: 1; }
 .cloud { margin-top: 28px; padding: 14px; border: 1px dashed var(--line); border-radius: 14px; font-size: 14px; color: var(--muted); }
 .shared { margin-top: 28px; text-align: center; }
+.shared + .shared { margin-top: 0; }
 .shared summary { display: inline-block; list-style: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px; }
 .shared summary::-webkit-details-marker { display: none; }
 .shared .cloud { margin-top: 6px; text-align: left; }
@@ -118,7 +119,7 @@ const T = {
     title: '장보기', super: '슈퍼마켓', asia: '아시아 마켓', online: '인터넷',
     stock: '구입한 것', addStore: '＋ 목록', addPh: '살 것 추가… (한국어/독일어)', add: '추가',
     emptyList: '목록이 비어 있어요.', emptyStock: '아직 구입한 물건이 없어요.\n목록에서 체크하면 여기로 옮겨져요.',
-    newStore: '새 장보기 목록 이름 (예: 드럭스토어)', delStore: '이 목록 삭제',
+    newStore: '새 장보기 목록 이름 (예: 드럭스토어)', manage: '목록 관리', delStore: n => `"${n}" 목록 삭제`,
     delStoreQ: n => `"${n}" 목록과 그 안의 항목을 모두 삭제할까요?`,
     unsorted: '📦 정리 전', unsortedHint: '어디에 보관할지 골라 주세요.',
     fridge: '냉장고', freezer: '냉동고', pantry: '실온',
@@ -138,7 +139,7 @@ const T = {
     title: 'Einkaufsliste', super: 'Supermarkt', asia: 'Asia-Markt', online: 'Internet',
     stock: 'Gekauft', addStore: '＋ Liste', addPh: 'Artikel hinzufügen… (Deutsch/Koreanisch)', add: 'Hinzufügen',
     emptyList: 'Die Liste ist leer.', emptyStock: 'Noch nichts gekauft.\nAbgehakte Artikel landen hier.',
-    newStore: 'Name der neuen Einkaufsliste (z. B. Drogerie)', delStore: 'Diese Liste löschen',
+    newStore: 'Name der neuen Einkaufsliste (z. B. Drogerie)', manage: 'Liste verwalten', delStore: n => `Liste „${n}“ löschen`,
     delStoreQ: n => `Liste „${n}“ mit allen Artikeln löschen?`,
     unsorted: '📦 Noch einzuräumen', unsortedHint: 'Bitte auswählen, wo es gelagert wird.',
     fridge: 'Kühlschrank', freezer: 'Gefrierfach', pantry: 'Vorrat',
@@ -364,9 +365,13 @@ function render() {
             `<button class="chip" data-act="move" data-v="${i.id}:${s.id}">${esc(storeName(s))}</button>`).join('')}</div>` : ''}
           ${noteId === i.id ? `<form class="move" data-act="note" data-v="${i.id}"><input name="note_${i.id}" value="${esc(i.note || '')}" placeholder="${L.notePh}" maxlength="60" autocomplete="off" enterkeyhint="done"><button class="chip">${L.noteOk}</button></form>` : ''}</li>`).join('') + '</ul>'
       : `<p class="empty">${L.emptyList}</p>`;
-    h += `<div class="foot"><span class="sp"></span><button class="link" data-act="delStore">${L.delStore}</button></div>`;
   }
   h += cloudHtml(L);
+  // Liste löschen liegt ganz unten hinter einem Aufklapper, damit man es nicht versehentlich trifft.
+  // 목록 삭제는 실수로 누르지 않게 맨 아래 접힌 칸 안에.
+  const cur = S.stores.find(s => s.id === S.active);
+  if (cur) h += `<details class="shared manage"><summary>⚙ ${L.manage}</summary><div class="cloud">
+    <button class="link" data-act="delStore">${L.delStore(esc(storeName(cur)))}</button></div></details>`;
   // Getippten Text und Fokus über das Neuzeichnen retten / 다시 그려도 입력 중인 글자와 포커스 유지
   const root = document.getElementById('app');
   const typing = [...root.querySelectorAll('input[name]')].map(el => [el.name, el.value, el === document.activeElement]);
