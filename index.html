@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f1f3f8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#12141a" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -34,8 +34,9 @@
     --shadow: 0 1px 2px rgba(0, 0, 0, .3);
   }
 }
-/* touch-action: zweimal Tippen auf dieselbe Stelle soll nicht vergrößern / 같은 곳을 두 번 눌러도 확대되지 않게 */
-* { box-sizing: border-box; touch-action: manipulation; }
+/* Kein Vergrößern, weder durch Doppeltippen noch mit zwei Fingern; nur Scrollen (siehe auch viewport und gesturestart).
+   두 번 터치든 두 손가락이든 확대 없음. 스크롤만 가능 (viewport, gesturestart 참고). */
+* { box-sizing: border-box; touch-action: pan-x pan-y; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.5 var(--sans); -webkit-text-size-adjust: 100%; }
 main { max-width: 540px; margin: 0 auto; padding: 22px 20px 96px; }
 [hidden] { display: none !important; }
@@ -862,6 +863,9 @@ function run(act, v, el) {
   if (act === 'noteOpen' && noteId) app.querySelector('form[data-act=note] input').focus();
 }
 const app = document.getElementById('app');
+// iPhone-Safari beachtet user-scalable=no nicht; dort das Zwei-Finger-Vergrößern eigens abfangen.
+// 아이폰 사파리는 user-scalable=no를 무시해서, 두 손가락 확대를 따로 막음.
+for (const type of ['gesturestart', 'gesturechange']) document.addEventListener(type, e => e.preventDefault(), { passive: false });
 app.addEventListener('input', e => {
   if (e.target.matches('input[data-search]')) filterStock();
   if (e.target.matches('.add input')) filterSugg();
