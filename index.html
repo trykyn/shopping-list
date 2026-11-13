@@ -103,6 +103,15 @@ li { flex-wrap: wrap; }
 .seg button:first-child { border-left: 0; }
 .seg button:hover { background: var(--soft); }
 .seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.sugg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: -4px 0 12px; font-size: 13px; color: var(--muted); }
+.sugg .chip { background: var(--card); color: var(--ink); }
+li.flash { background: var(--soft); }
+#toast {
+  position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 10;
+  display: flex; align-items: center; gap: 14px; max-width: calc(100% - 32px); padding: 11px 16px; border-radius: 12px;
+  background: var(--ink); color: var(--bg); font-size: 15px; box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+}
+#toast button { color: inherit; font-weight: 700; text-decoration: underline; white-space: nowrap; }
 .chip { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; }
 .chip:hover { background: var(--soft); }
 .sp { flex: 1; }
@@ -136,6 +145,9 @@ const T = {
     note: '메모 쓰기', notePh: '메모 (예: 2개, 유기농)', noteOk: '저장', txPh: { de: '독일어 번역 고치기', ko: '한국어 번역 고치기' },
     move: '다른 목록으로 옮기기', moveTo: '옮길 곳:',
     again: '다시 사기', used: '다 썼어요',
+    split: '나누기', splitMsg: "둘로 나눴어요. 새 것은 '정리 전'에 있어요", sugg: '자주 사는 것', dup: '이미 목록에 있어요',
+    undo: '되돌리기', removed: '지웠어요', boughtMsg: '구입한 것으로 옮겼어요', usedMsg: '다 쓴 것으로 지웠어요',
+    againMsg: '살 것으로 옮겼어요', listGone: '목록을 지웠어요',
     searchPh: '구입한 것 검색 (예: 두부, Milch)', noMatch: '찾는 물건이 없어요.', clear: '검색어 지우기',
     banner: n => `⏰ 소비기한이 곧 끝나는 물건 ${n}개`,
     notifOn: '🔔 알림 켜기', notifOk: '🔔 알림 켜짐', notifNo: '알림이 차단되어 있어요 (브라우저 설정에서 허용)',
@@ -157,6 +169,9 @@ const T = {
     note: 'Notiz schreiben', notePh: 'Notiz (z. B. 2 Stück, Bio)', noteOk: 'Speichern', txPh: { de: 'Übersetzung (Deutsch)', ko: 'Übersetzung (Koreanisch)' },
     move: 'In eine andere Liste verschieben', moveTo: 'Verschieben nach:',
     again: 'Nochmal kaufen', used: 'Aufgebraucht',
+    split: 'Teilen', splitMsg: 'Geteilt. Der neue Teil steht unter „Noch einräumen“', sugg: 'Oft gekauft', dup: 'Steht schon auf der Liste',
+    undo: 'Rückgängig', removed: 'Gelöscht', boughtMsg: 'Nach „Gekauft“ verschoben', usedMsg: 'Als aufgebraucht entfernt',
+    againMsg: 'Wieder auf die Liste gesetzt', listGone: 'Liste gelöscht',
     searchPh: 'Gekauftes suchen (z. B. Milch, 두부)', noMatch: 'Nichts gefunden.', clear: 'Suche löschen',
     banner: n => n === 1 ? '⏰ 1 Artikel läuft bald ab' : `⏰ ${n} Artikel laufen bald ab`,
     notifOn: '🔔 Benachrichtigungen einschalten', notifOk: '🔔 Benachrichtigungen aktiv', notifNo: 'Benachrichtigungen sind blockiert (in den Browser-Einstellungen erlauben)',
@@ -312,6 +327,12 @@ let S = load();
 S.memo = S.memo || [];
 // fix: von Hand korrigierte Übersetzungen { id, to } / 직접 고친 번역
 S.fix = S.fix || [];
+// hist: was schon gekauft wurde { id, name, n: wie oft, store: zuletzt wo } – für die Vorschläge beim Eintragen.
+// 지금까지 산 것 { id, name, n: 횟수, store: 마지막으로 산 목록 }. 입력할 때 추천으로 씀.
+S.hist = S.hist || [];
+const histId = name => 'h' + [...clean(name).toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
+// Gleicher Artikel, egal in welcher Sprache eingegeben ("우유" = "Milch") / 어느 언어로 썼든 같은 물건
+const sameKey = name => searchKey(tr(name, 'de'));
 // Schlüssel dafür: der Name auf Deutsch, als Zeichencodes (taugt als Feldname in der geteilten Liste).
 // 그 열쇠: 독일어 이름을 문자 코드로 바꾼 것(공유 목록의 필드 이름으로 쓸 수 있게).
 const memoId = name => 'n' + [...tr(name, 'de').toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
@@ -374,6 +395,7 @@ function render() {
   else {
     const items = S.items.filter(i => i.store === S.active);
     h += `<form class="add" data-act="add"><input name="name" placeholder="${L.addPh}" autocomplete="off" enterkeyhint="done"><button>${L.add}</button></form>`;
+    h += suggHtml(L);
     h += items.length
       ? '<ul>' + items.map(i => `<li><input type="checkbox" data-act="buy" data-v="${i.id}" aria-label="${esc(tr(i.name))}">
           <button class="pick name" data-act="noteOpen" data-v="${i.id}" title="${L.note}">${nameHtml(i.name)}${noteHtml(i)}</button>
@@ -399,10 +421,85 @@ function render() {
     if (el && (value || focused)) el.value = value;
     if (el && focused) el.focus();
   }
+  filterSugg();
+  if (flashId) {
+    // Den schon vorhandenen Artikel kurz hervorheben / 이미 있는 항목을 잠깐 강조
+    const box = root.querySelector(`input[data-act=buy][data-v="${flashId}"]`), li = box && box.closest('li');
+    flashId = null;
+    if (li) { li.classList.add('flash'); li.scrollIntoView({ block: 'nearest' }); setTimeout(() => li.classList.remove('flash'), 1600); }
+  }
   filterStock(); // Suchbegriff gilt auch nach dem Neuzeichnen / 다시 그려도 검색어 유지
 
   for (const x of [...S.items, ...S.stock, ...S.stores.filter(s => !s.key)]) translateOnline(x.name);
 }
+
+// ---------- Vorschläge / 추천 ----------
+// Unter dem Eingabefeld: was oft gekauft wurde (dieser Laden zuerst) und was gerade im Haus ist.
+// Beim Tippen bleiben nur die passenden; gefiltert wird ohne Neuzeichnen, wie bei der Suche.
+// 입력 칸 아래: 자주 산 것(이 목록에서 산 것 먼저)과 지금 집에 있는 것. 입력하면 맞는 것만 남음.
+function suggHtml(L) {
+  const have = new Set(S.items.filter(i => i.store === S.active).map(i => sameKey(i.name))), out = [];
+  const names = [...S.hist].sort((a, b) => (b.store === S.active) - (a.store === S.active) || b.n - a.n).map(h => h.name)
+    .concat(S.stock.map(x => clean(x.name)));
+  for (const name of names) {
+    const k = sameKey(name);
+    if (have.has(k)) continue;
+    have.add(k);
+    out.push(name);
+    if (out.length >= 60) break;
+  }
+  if (!out.length) return '';
+  return `<div class="sugg"><span>${L.sugg}</span>${out.map(n => `<button type="button" class="chip" data-act="sugg" data-v="${esc(n)}"
+    data-find="${esc(searchKey([n, tr(n, 'ko'), tr(n, 'de')].join(' ')))}">${esc(tr(n))}</button>`).join('')}</div>`;
+}
+function filterSugg() {
+  const box = app.querySelector('.sugg'), input = app.querySelector('.add input');
+  if (!box || !input) return;
+  const q = searchKey(input.value);
+  let shown = 0;
+  for (const b of box.querySelectorAll('button')) {
+    const hit = (!q || b.dataset.find.includes(q)) && shown < 6;
+    b.hidden = !hit;
+    if (hit) shown++;
+  }
+  box.hidden = !shown;
+}
+// Neuer Eintrag in der offenen Liste; was schon draufsteht, wird nur gezeigt statt doppelt eingetragen.
+// 열려 있는 목록에 새 항목. 이미 있는 것은 또 넣지 않고 보여 주기만 함.
+let flashId = null;
+function addItem(name) {
+  const dup = S.items.find(i => i.store === S.active && sameKey(i.name) === sameKey(name));
+  if (dup) { flashId = dup.id; toast(t().dup); return; }
+  S.items.push({ id: uid(), store: S.active, name });
+}
+
+// ---------- Hinweis unten, mit "Rückgängig" / 아래쪽 알림과 되돌리기 ----------
+// back = was zurückkommt ({ stores, items, stock }) und was dafür wieder verschwindet ({ drop: { items: [id] } }).
+// Es werden nur diese Einträge angefasst, damit inzwischen eingetroffene Änderungen der anderen bleiben.
+// back = 되살릴 것과 대신 없앨 것. 그 항목만 건드려서, 그사이 가족이 바꾼 내용은 그대로 둠.
+const toastEl = document.body.appendChild(Object.assign(document.createElement('div'), { id: 'toast', hidden: true }));
+toastEl.setAttribute('role', 'status');
+let undo = null, toastTimer = 0;
+function toast(msg, back) {
+  undo = back || null;
+  toastEl.innerHTML = `<span>${esc(msg)}</span>` + (back ? `<button type="button">${t().undo}</button>` : '');
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; undo = null; }, back ? 8000 : 2500);
+}
+toastEl.addEventListener('click', e => {
+  if (!e.target.closest('button') || !undo) return;
+  const u = undo;
+  undo = null; toastEl.hidden = true;
+  for (const k of ['stores', 'items', 'stock']) {
+    const drop = (u.drop && u.drop[k]) || [];
+    S[k] = S[k].filter(x => !drop.includes(x.id));
+    for (const x of u[k] || []) if (!S[k].some(y => y.id === x.id)) S[k].push(x);
+    if (k !== 'stores') S[k].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  }
+  if (u.active) S.active = u.active;
+  save(); render(); checkExpiry();
+});
 
 // Konto und geteilte Liste; ohne Firebase-Konfiguration bleibt die App rein lokal.
 // 계정과 공유 목록. Firebase 설정이 없으면 앱은 기기 안에서만 동작.
@@ -473,6 +570,7 @@ function stockItem(x, L) {
     ${open ? `${editForm(x, L)}
       <div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
       <span class="sp"></span>
+      <button class="chip" data-act="split" data-v="${x.id}">✂ ${L.split}</button>
       <button class="chip" data-act="again" data-v="${x.id}">↩ ${L.again}</button>
       <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div>` : ''}</li>`;
 }
@@ -526,10 +624,32 @@ const actions = {
   delStore() {
     const s = S.stores.find(s => s.id === S.active);
     if (!s || !confirm(t().delStoreQ(storeName(s)))) return;
+    toast(t().listGone, { stores: [s], items: S.items.filter(i => i.store === s.id), active: s.id });
     S.stores = S.stores.filter(x => x !== s);
     S.items = S.items.filter(i => i.store !== s.id);
   },
-  del(v) { S.items = S.items.filter(i => i.id !== v); },
+  del(v) {
+    const i = S.items.find(i => i.id === v);
+    if (!i) return;
+    S.items = S.items.filter(x => x !== i);
+    toast(t().removed, { items: [i] });
+  },
+  sugg(v) {
+    addItem(v);
+    const input = app.querySelector('.add input');
+    if (input) input.value = '';
+  },
+  // Einen Teil abtrennen (z. B. die Hälfte einfrieren): eine Kopie, die neu eingeräumt wird.
+  // 일부를 따로 떼기(예: 절반은 냉동). 복사본이 '정리 전'으로 감.
+  split(v) {
+    const x = S.stock.find(x => x.id === v);
+    if (!x) return;
+    const y = { ...x, id: uid(), loc: null };
+    if (!y.manual && y.days) y.expires = addDays(y.bought, shelfDays(y));
+    S.stock.push(y);
+    openId = y.id;
+    toast(t().splitMsg, { drop: { stock: [y.id] } });
+  },
   buy(v) {
     const i = S.items.find(i => i.id === v);
     if (!i) return;
@@ -540,6 +660,10 @@ const actions = {
     const x = { id: i.id, name: i.name, ...(i.note && { note: i.note }), store: i.store, loc: m && m.loc === 'pantry' ? 'pantry' : null, bought, days, expires: null };
     if (days) x.expires = addDays(bought, shelfDays(x));
     S.stock.push(x);
+    const old = S.hist.find(h => h.id === histId(i.name));
+    S.hist = S.hist.filter(h => h !== old);
+    S.hist.push({ id: histId(i.name), name: clean(i.name), n: ((old && old.n) || 0) + 1, store: i.store });
+    toast(t().boughtMsg, { items: [i], drop: { stock: [x.id] } });
   },
   // Lagerort wählen; ein selbst eingetragenes Datum bleibt, ein geschätztes wird neu berechnet.
   // 보관 장소 선택. 직접 입력한 날짜는 그대로 두고, 자동 계산한 날짜만 다시 계산.
@@ -563,10 +687,21 @@ const actions = {
     const x = S.stock.find(x => x.id === v);
     if (!x) return;
     const store = S.stores.some(s => s.id === x.store) ? x.store : (S.stores[0] || {}).id;
-    if (store && !S.items.some(i => i.store === store && i.name === x.name)) S.items.push({ id: uid(), store, name: x.name, ...(x.note && { note: x.note }) });
+    const back = { stock: [x], drop: { items: [] } };
+    if (store && !S.items.some(i => i.store === store && sameKey(i.name) === sameKey(x.name))) {
+      const i = { id: uid(), store, name: x.name, ...(x.note && { note: x.note }) };
+      S.items.push(i);
+      back.drop.items.push(i.id);
+    }
     S.stock = S.stock.filter(y => y !== x);
+    toast(t().againMsg, back);
   },
-  used(v) { S.stock = S.stock.filter(x => x.id !== v); },
+  used(v) {
+    const x = S.stock.find(x => x.id === v);
+    if (!x) return;
+    S.stock = S.stock.filter(y => y !== x);
+    toast(t().usedMsg, { stock: [x] });
+  },
   notif() { Notification.requestPermission().then(() => { render(); checkExpiry(); }); return false; },
   signin() { cloud.signIn().catch(cloudErr); return false; },
   signout() { cloud.signOut().catch(cloudErr); return false; },
@@ -590,7 +725,10 @@ function run(act, v, el) {
   if (act === 'noteOpen' && noteId) app.querySelector('form[data-act=note] input').focus();
 }
 const app = document.getElementById('app');
-app.addEventListener('input', e => { if (e.target.matches('input[data-search]')) filterStock(); });
+app.addEventListener('input', e => {
+  if (e.target.matches('input[data-search]')) filterStock();
+  if (e.target.matches('.add input')) filterSugg();
+});
 app.addEventListener('click', e => {
   if (e.target.closest('[data-clear-search]')) {
     const box = app.querySelector('input[data-search]');
@@ -619,8 +757,12 @@ app.addEventListener('submit', e => {
       // 고친 번역을 기억. 칸을 비우면 자동 번역으로 돌아감.
       const n = clean(i.name), to = srcLang(n) === 'ko' ? 'de' : 'ko', was = tr(n, to), t = clean(e.target.elements['tx_' + id].value);
       if (t !== (was !== n ? was : '')) {
+        const key = memoId(n), m = S.memo.find(m => m.id === key);
         S.fix = S.fix.filter(f => f.id !== fixId(n));
         if (t) S.fix.push({ id: fixId(n), to: t });
+        // "Lag im Vorrat" hängt am deutschen Namen: mit der neuen Übersetzung mitnehmen.
+        // '실온에 뒀음' 기억은 독일어 이름에 붙어 있어서, 번역이 바뀌면 같이 옮김.
+        if (m && memoId(n) !== key) { S.memo = S.memo.filter(x => x !== m && x.id !== memoId(n)); S.memo.push({ ...m, id: memoId(n) }); }
       }
     }
     noteId = null;
@@ -629,7 +771,7 @@ app.addEventListener('submit', e => {
   }
   const name = e.target.elements.name.value.trim();
   if (!name) return;
-  S.items.push({ id: uid(), store: S.active, name });
+  addItem(name);
   e.target.elements.name.value = '';
   save(); render();
   app.querySelector('.add input').focus();
@@ -680,7 +822,7 @@ if (cfg) {
   const fb = initializeApp(cfg), auth = A.getAuth(fb);
   const db = F.initializeFirestore(fb, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) });
 
-  const KINDS = ['stores', 'items', 'stock', 'memo', 'fix'], FIRST = ['super', 'asia', 'online'];
+  const KINDS = ['stores', 'items', 'stock', 'memo', 'fix', 'hist'], FIRST = ['super', 'asia', 'online'];
   const sig = o => JSON.stringify(o, Object.keys(o).sort());
   const rank = s => (FIRST.indexOf(s.id) + 1) || 9;
   const house = () => F.doc(db, 'households', S.house);
@@ -717,7 +859,7 @@ if (cfg) {
       S.remote = JSON.parse(JSON.stringify(Object.fromEntries(KINDS.map(k => [k, d[k] || {}]))));
       const list = k => Object.values(JSON.parse(JSON.stringify(S.remote[k]))).sort((a, b) => a.id < b.id ? -1 : 1);
       S.stores = list('stores').sort((a, b) => rank(a) - rank(b));
-      S.items = list('items'); S.stock = list('stock'); S.memo = list('memo'); S.fix = list('fix');
+      S.items = list('items'); S.stock = list('stock'); S.memo = list('memo'); S.fix = list('fix'); S.hist = list('hist');
       try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
       render(); checkExpiry();
     }, e => console.warn('sync', e));
