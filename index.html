@@ -437,7 +437,8 @@ function stockItem(x, L) {
   return `<li class="s-item"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
       <span class="name">${nameHtml(x.name)}${noteHtml(x)}</span>${badge}<span class="chev">${open ? '▴' : '▾'}</span></button>
     ${open || !placed ? `<div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ICON[l]} ${L[l]}</button>`).join('')}</div>` : ''}
-    ${open ? `<div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
+    ${open ? `<form class="move" data-act="note" data-v="${x.id}"><input name="note_${x.id}" value="${esc(x.note || '')}" placeholder="${L.notePh}" maxlength="60" autocomplete="off" enterkeyhint="done"><button class="chip">${L.noteOk}</button></form>
+      <div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
       <span class="sp"></span>
       <button class="chip" data-act="again" data-v="${x.id}">↩ ${L.again}</button>
       <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div>` : ''}</li>`;
@@ -546,7 +547,7 @@ app.addEventListener('change', e => {
 app.addEventListener('submit', e => {
   e.preventDefault();
   if (e.target.dataset.act === 'note') {
-    const i = S.items.find(i => i.id === e.target.dataset.v), note = e.target.querySelector('input').value.trim();
+    const i = [...S.items, ...S.stock].find(i => i.id === e.target.dataset.v), note = e.target.querySelector('input').value.trim();
     if (i && note) i.note = note; else if (i) delete i.note;
     noteId = null;
     save(); render();
