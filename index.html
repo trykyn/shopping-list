@@ -93,6 +93,10 @@ li input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent)
 .chip { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; }
 .chip:hover { background: var(--soft); }
 .sp { flex: 1; }
+.cloud { margin-top: 28px; padding: 14px; border: 1px dashed var(--line); border-radius: 14px; font-size: 14px; color: var(--muted); }
+.cloud p { margin: 0 0 10px; }
+.cloud .foot { margin-top: 0; align-items: center; }
+.code { color: var(--ink); letter-spacing: 1px; user-select: all; }
 </style>
 </head>
 <body>
@@ -114,6 +118,10 @@ const T = {
     again: '다시 사기', used: '다 썼어요',
     banner: n => `⏰ 소비기한이 곧 끝나는 물건 ${n}개`,
     notifOn: '🔔 알림 켜기', notifOk: '🔔 알림 켜짐', notifNo: '알림이 차단되어 있어요 (브라우저 설정에서 허용)',
+    signHint: '로그인하면 가족과 같은 목록을 함께 쓸 수 있어요.', signIn: '구글로 로그인', signOut: '로그아웃',
+    houseHint: '함께 쓸 목록을 새로 만들거나, 받은 초대 코드를 입력하세요.', houseNew: '우리 집 목록 만들기', houseJoin: '초대 코드 입력',
+    joinPrompt: '초대 코드를 입력하세요', badCode: '이 초대 코드로 된 목록이 없어요.',
+    shared: '함께 쓰는 중 · 초대 코드', copy: '코드 복사', cloudErr: '연결에 문제가 생겼어요.',
     nTitle: '소비기한 알림', nBody: (n, d) => d < 0 ? `${n} — 소비기한이 지났어요` : d === 0 ? `${n} — 오늘까지예요` : `${n} — ${d}일 남았어요`,
   },
   de: {
@@ -128,6 +136,10 @@ const T = {
     again: 'Nochmal kaufen', used: 'Aufgebraucht',
     banner: n => n === 1 ? '⏰ 1 Artikel läuft bald ab' : `⏰ ${n} Artikel laufen bald ab`,
     notifOn: '🔔 Benachrichtigungen einschalten', notifOk: '🔔 Benachrichtigungen aktiv', notifNo: 'Benachrichtigungen sind blockiert (in den Browser-Einstellungen erlauben)',
+    signHint: 'Mit Anmeldung könnt ihr dieselbe Liste gemeinsam nutzen.', signIn: 'Mit Google anmelden', signOut: 'Abmelden',
+    houseHint: 'Neue gemeinsame Liste anlegen oder einen Einladungscode eingeben.', houseNew: 'Gemeinsame Liste anlegen', houseJoin: 'Einladungscode eingeben',
+    joinPrompt: 'Einladungscode eingeben', badCode: 'Zu diesem Einladungscode gibt es keine Liste.',
+    shared: 'Gemeinsame Liste · Einladungscode', copy: 'Code kopieren', cloudErr: 'Die Verbindung hat nicht geklappt.',
     nTitle: 'Haltbarkeit', nBody: (n, d) => d < 0 ? `${n} – ist abgelaufen` : d === 0 ? `${n} – nur noch heute haltbar` : d === 1 ? `${n} – noch 1 Tag haltbar` : `${n} – noch ${d} Tage haltbar`,
   },
 };
@@ -276,7 +288,12 @@ function load() {
     items: [], stock: [], active: 'super',
   };
 }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+// Speichert auf dem Gerät und schickt Änderungen an die geteilte Liste, falls verbunden.
+// 기기에 저장하고, 연결돼 있으면 바뀐 내용을 공유 목록으로 보냄.
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  if (window.cloud) window.cloud.push();
+}
 
 const t = () => T[S.lang];
 const storeName = s => s.key ? t()[s.key] : tr(s.name);
@@ -326,6 +343,7 @@ function render() {
       : `<p class="empty">${L.emptyList}</p>`;
     h += `<div class="foot"><span class="sp"></span><button class="link" data-act="delStore">${L.delStore}</button></div>`;
   }
+  h += cloudHtml(L);
   // Getippten Text und Fokus über das Neuzeichnen retten / 다시 그려도 입력 중인 글자와 포커스 유지
   const root = document.getElementById('app'), old = root.querySelector('.add input');
   const typed = old ? old.value : '', focused = old && document.activeElement === old;
@@ -335,6 +353,21 @@ function render() {
   if (input && focused) input.focus();
 
   for (const x of [...S.items, ...S.stock, ...S.stores.filter(s => !s.key)]) translateOnline(x.name);
+}
+
+// Konto und geteilte Liste; ohne Firebase-Konfiguration bleibt die App rein lokal.
+// 계정과 공유 목록. Firebase 설정이 없으면 앱은 기기 안에서만 동작.
+function cloudHtml(L) {
+  const c = window.cloud;
+  if (!c || !c.ready) return '';
+  if (!c.user) return `<div class="cloud"><p>${L.signHint}</p><button class="btn" data-act="signin">${L.signIn}</button></div>`;
+  if (!S.house) return `<div class="cloud"><p>${L.houseHint}</p><div class="foot">
+    <button class="btn" data-act="houseNew">${L.houseNew}</button>
+    <button class="btn ghost" data-act="houseJoin">${L.houseJoin}</button>
+    <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div>`;
+  return `<div class="cloud"><p>${L.shared} <b class="code">${esc(S.house)}</b></p><div class="foot">
+    <button class="chip" data-act="copyCode">${L.copy}</button>
+    <span class="sp"></span><button class="link" data-act="signout">${L.signOut}</button></div></div>`;
 }
 
 function renderStock(L, due) {
@@ -400,7 +433,7 @@ const actions = {
     if (!i) return;
     S.items = S.items.filter(x => x !== i);
     const bought = iso(new Date()), days = guessDays(i.name) || guessDays((S.tx && S.tx[clean(i.name)]) || '');
-    S.stock.push({ id: i.id, name: i.name, store: i.store, loc: null, bought, days, expires: days ? addDays(bought, days) : null, notified: false });
+    S.stock.push({ id: i.id, name: i.name, store: i.store, loc: null, bought, days, expires: days ? addDays(bought, days) : null });
   },
   // Lagerort wählen; ein selbst eingetragenes Datum bleibt, ein geschätztes wird neu berechnet.
   // 보관 장소 선택. 직접 입력한 날짜는 그대로 두고, 자동 계산한 날짜만 다시 계산.
@@ -409,11 +442,11 @@ const actions = {
     const x = S.stock.find(x => x.id === id);
     if (!x) return;
     x.loc = loc;
-    if (!x.manual && x.days) { x.expires = addDays(x.bought, shelfDays(x)); x.notified = false; }
+    if (!x.manual && x.days) { x.expires = addDays(x.bought, shelfDays(x)); }
   },
   exp(v, el) {
     const x = S.stock.find(x => x.id === v);
-    if (x) { x.expires = el.value || null; x.manual = true; x.notified = false; }
+    if (x) { x.expires = el.value || null; x.manual = true; }
   },
   again(v) {
     const x = S.stock.find(x => x.id === v);
@@ -424,7 +457,20 @@ const actions = {
   },
   used(v) { S.stock = S.stock.filter(x => x.id !== v); },
   notif() { Notification.requestPermission().then(() => { render(); checkExpiry(); }); return false; },
+  signin() { cloud.signIn().catch(cloudErr); return false; },
+  signout() { cloud.signOut().catch(cloudErr); return false; },
+  houseNew() { cloud.create().catch(cloudErr); return false; },
+  houseJoin() {
+    const code = (prompt(t().joinPrompt) || '').trim();
+    if (code) cloud.join(code).then(ok => { if (!ok) alert(t().badCode); }).catch(cloudErr);
+    return false;
+  },
+  copyCode(v, el) {
+    if (navigator.clipboard) navigator.clipboard.writeText(S.house).then(() => { el.textContent = '✓'; }).catch(() => {});
+    return false;
+  },
 };
+const cloudErr = e => alert(t().cloudErr + '\n' + (e && (e.code || e.message) || ''));
 
 function run(act, v, el) {
   if (!actions[act]) return;
@@ -464,13 +510,17 @@ function notify(title, body, tag) {
 // Einmal pro Artikel melden, sobald die Vorwarnzeit erreicht ist / 알림 시점이 되면 물건마다 한 번 알림
 function checkExpiry() {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  // Pro Gerät merken (nicht geteilt), für welches Datum schon gemeldet wurde – so klingeln beide Handys.
+  // 어느 날짜에 대해 알렸는지 기기마다 따로 기억(공유 안 함) — 두 휴대폰 모두 울리도록.
+  const seen = S.seen = S.seen || {};
   let changed = false;
+  for (const id in seen) if (!S.stock.some(x => x.id === id)) { delete seen[id]; changed = true; }
   for (const x of S.stock) {
-    if (x.notified || !soon(x)) continue;
+    if (seen[x.id] === x.expires || !soon(x)) continue;
     notify(t().nTitle, t().nBody(tr(x.name), daysLeft(x.expires)), x.id);
-    x.notified = changed = true;
+    seen[x.id] = x.expires; changed = true;
   }
-  if (changed) save();
+  if (changed) try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
 }
 
 render();
@@ -478,6 +528,103 @@ checkExpiry();
 setInterval(() => { render(); checkExpiry(); }, 60 * 60 * 1000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { render(); checkExpiry(); } });
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+<script src="firebase-config.js"></script>
+<script type="module">
+// ---------- Konto & gemeinsame Liste (Firebase) / 계정과 공유 목록 ----------
+// Ein Haushalt ist ein Dokument households/{Einladungscode} mit den Karten stores, items, stock (je id → Eintrag).
+// Jede Änderung geht als einzelnes Feld hoch, damit zwei Handys sich nicht gegenseitig überschreiben.
+// 한 집 = households/{초대 코드} 문서 하나, 그 안에 stores·items·stock 맵(id → 항목).
+// 바뀐 항목만 필드 단위로 올려서 두 휴대폰이 서로 덮어쓰지 않게 함.
+const cfg = window.FIREBASE_CONFIG;
+if (cfg) {
+  const V = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  const [{ initializeApp }, A, F] = await Promise.all(
+    [import(V + 'firebase-app.js'), import(V + 'firebase-auth.js'), import(V + 'firebase-firestore.js')]);
+  const fb = initializeApp(cfg), auth = A.getAuth(fb);
+  const db = F.initializeFirestore(fb, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) });
+
+  const KINDS = ['stores', 'items', 'stock'], FIRST = ['super', 'asia', 'online'];
+  const sig = o => JSON.stringify(o, Object.keys(o).sort());
+  const rank = s => (FIRST.indexOf(s.id) + 1) || 9;
+  const house = () => F.doc(db, 'households', S.house);
+  let unsub = null, first = true;
+
+  // Unterschied zwischen dem zuletzt gesehenen Serverstand (S.remote) und dem Gerät, als Feld-Updates.
+  // 마지막으로 본 서버 상태(S.remote)와 기기 상태의 차이를 필드 업데이트로.
+  function changes() {
+    const out = {};
+    for (const k of KINDS) {
+      const base = (S.remote && S.remote[k]) || {}, local = Object.fromEntries(S[k].map(x => [x.id, x]));
+      for (const id in local) if (!base[id] || sig(local[id]) !== sig(base[id])) out[`${k}.${id}`] = local[id];
+      for (const id in base) if (!local[id]) out[`${k}.${id}`] = F.deleteField();
+    }
+    return out;
+  }
+  function push() {
+    if (!unsub || first || !S.house) return;
+    const c = changes();
+    if (Object.keys(c).length) F.updateDoc(house(), c).catch(e => console.warn('sync', e));
+  }
+  function listen() {
+    stop(); first = true;
+    unsub = F.onSnapshot(house(), snap => {
+      if (!snap.exists()) return;
+      if (first) {
+        // Erst hochladen, was auf diesem Gerät seit dem letzten Abgleich dazukam; die Antwort enthält es dann.
+        // 마지막 동기화 뒤 이 기기에서 바뀐 것을 먼저 올림. 다음 응답에 그 내용이 포함됨.
+        first = false;
+        const c = changes();
+        if (Object.keys(c).length) { F.updateDoc(house(), c).catch(e => console.warn('sync', e)); return; }
+      }
+      const d = snap.data();
+      S.remote = JSON.parse(JSON.stringify({ stores: d.stores || {}, items: d.items || {}, stock: d.stock || {} }));
+      const list = k => Object.values(JSON.parse(JSON.stringify(S.remote[k]))).sort((a, b) => a.id < b.id ? -1 : 1);
+      S.stores = list('stores').sort((a, b) => rank(a) - rank(b));
+      S.items = list('items'); S.stock = list('stock');
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+      render(); checkExpiry();
+    }, e => console.warn('sync', e));
+  }
+  function stop() { if (unsub) unsub(); unsub = null; }
+  async function link(code) {
+    S.house = code; S.remote = null; save();
+    await F.setDoc(F.doc(db, 'users', auth.currentUser.uid), { house: code });
+    listen(); render();
+  }
+
+  window.cloud = {
+    ready: false, user: null, push,
+    signIn: () => A.signInWithPopup(auth, new A.GoogleAuthProvider()),
+    async signOut() { stop(); delete S.house; delete S.remote; save(); await A.signOut(auth); },
+    async create() {
+      const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      const code = [...crypto.getRandomValues(new Uint8Array(10))].map(n => abc[n % abc.length]).join('');
+      await F.setDoc(F.doc(db, 'households', code), { stores: {}, items: {}, stock: {}, created: Date.now() });
+      await link(code);
+    },
+    async join(code) {
+      code = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!code || !(await F.getDoc(F.doc(db, 'households', code))).exists()) return false;
+      await link(code);
+      return true;
+    },
+  };
+
+  A.onAuthStateChanged(auth, async user => {
+    cloud.user = user;
+    if (!user) stop();
+    else {
+      if (!S.house) try {
+        const u = await F.getDoc(F.doc(db, 'users', user.uid));
+        if (u.exists() && u.data().house) { S.house = u.data().house; S.remote = null; save(); }
+      } catch (e) { console.warn('sync', e); }
+      if (S.house && !unsub) listen();
+    }
+    cloud.ready = true;
+    render();
+  });
+}
 </script>
 </body>
 </html>
