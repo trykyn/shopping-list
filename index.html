@@ -71,8 +71,12 @@ li input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--accent)
 .foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .link { color: var(--muted); font-size: 14px; text-decoration: underline; padding: 6px 2px; }
 .s-item { display: block; }
-.s-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.s-top .name { font-weight: 600; }
+.s-item { padding: 0 12px; }
+.s-top { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 0; min-height: 44px; }
+.s-top .name { flex: 1; min-width: 0; }
+.chev { color: var(--muted); font-size: 12px; }
+.s-item .seg { margin-bottom: 10px; }
+.s-item .s-row { margin: 0 0 12px; }
 .badge { flex: none; font-size: 13px; padding: 2px 9px; border-radius: 999px; background: var(--soft); color: var(--accent); font-weight: 600; }
 .badge.warn { background: var(--warn-bg); color: var(--warn); }
 .badge.bad { background: var(--bad-bg); color: var(--bad); }
@@ -360,16 +364,22 @@ function stockItem(x, L) {
     const d = daysLeft(x.expires);
     badge = `<span class="badge ${d < 0 ? 'bad' : soon(x) ? 'warn' : ''}">${d < 0 ? L.over(-d) : d === 0 ? L.today : L.left(d)}</span>`;
   }
-  return `<li class="s-item"><div class="s-top"><span class="name">${nameHtml(x.name)}</span>${badge}</div>
-    <div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ICON[l]} ${L[l]}</button>`).join('')}</div>
-    <div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
+  // Eine Zeile pro Artikel; Antippen klappt die Bedienung auf. Noch nicht Eingeräumtes zeigt gleich die Lagerorte.
+  // 물건마다 한 줄, 누르면 펼쳐짐. 정리 전 물건은 보관 장소 버튼을 바로 보여 줌.
+  const open = x.id === openId, placed = LOCS.includes(x.loc);
+  return `<li class="s-item"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
+      <span class="name">${nameHtml(x.name)}</span>${badge}<span class="chev">${open ? '▴' : '▾'}</span></button>
+    ${open || !placed ? `<div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ICON[l]} ${L[l]}</button>`).join('')}</div>` : ''}
+    ${open ? `<div class="s-row"><label>${L.exp} <input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label>
       <span class="sp"></span>
       <button class="chip" data-act="again" data-v="${x.id}">↩ ${L.again}</button>
-      <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div></li>`;
+      <button class="chip" data-act="used" data-v="${x.id}">${L.used}</button></div>` : ''}</li>`;
 }
 
 // ---------- Aktionen / 동작 ----------
+let openId = null; // aufgeklappter Artikel in "Gekauft" / 구입한 것에서 펼친 물건
 const actions = {
+  open(v) { openId = openId === v ? null : v; },
   lang(v) { S.lang = v; },
   tab(v) { S.active = v; },
   addStore() {
