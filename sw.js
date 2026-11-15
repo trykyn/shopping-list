@@ -15,10 +15,10 @@ self.addEventListener('activate', e => e.waitUntil((async () => {
   await self.clients.claim();
 })()));
 self.addEventListener('fetch', e => {
-  // Nur die App selbst und die Firebase-Bibliothek; Datenverbindungen (Firestore, Anmeldung) bleiben unberührt.
-  // 앱 파일과 Firebase 라이브러리만 처리. 데이터 연결(Firestore, 로그인)은 건드리지 않음.
+  // Nur die App selbst, die Firebase-Bibliothek und die Schrift; Datenverbindungen (Firestore, Anmeldung) bleiben unberührt.
+  // 앱 파일, Firebase 라이브러리, 글꼴만 처리. 데이터 연결(Firestore, 로그인)은 건드리지 않음.
   const u = new URL(e.request.url);
-  if (e.request.method !== 'GET' || (u.origin !== location.origin && u.origin !== 'https://www.gstatic.com')) return;
+  if (e.request.method !== 'GET' || (u.origin !== location.origin && !['https://www.gstatic.com', 'https://cdn.jsdelivr.net'].includes(u.origin))) return;
   const own = u.origin === location.origin;
   e.respondWith(
     (own ? fetch(u.href, { cache: 'no-cache' }) : fetch(e.request)).then(r => {
