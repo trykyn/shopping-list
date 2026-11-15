@@ -11,9 +11,7 @@
 <title>장보기</title>
 <style>
 /* Aussehen: ruhige Karten. Hellgrauer Grund, weiße Karten, ein einziges Blau; Farbe sonst nur für die Haltbarkeit.
-   Die Regeln dazu stehen am Ende dieses Blocks ("Karten") und gehen den älteren Grundregeln davor vor.
-   모양: 차분한 카드. 연회색 바탕, 흰 카드, 파란색 하나. 그 밖의 색은 소비기한 표시에만.
-   해당 규칙은 이 블록 맨 끝("Karten")에 있고, 앞쪽 기본 규칙보다 우선함. */
+   모양: 차분한 카드. 연회색 바탕, 흰 카드, 파란색 하나. 그 밖의 색은 소비기한 표시에만. */
 :root {
   --bg: #f1f3f8; --card: #ffffff; --ink: #141821; --muted: #5d6676; --line: #e4e7ef;
   --accent: #2f5bea; --accent-ink: #ffffff; --soft: #e8eeff; --ok: #1d8a5b; --ok-bg: #e6f5ee;
@@ -22,7 +20,6 @@
   --tabbar: #e2e6ef; --field: #f6f7fb; --ring: #b4bccb;
   --shadow: 0 1px 2px rgba(20, 24, 33, .06), 0 4px 14px rgba(20, 24, 33, .04);
   --sans: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-  --serif: var(--sans);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -47,55 +44,52 @@ button { cursor: pointer; border: 0; background: none; padding: 0; }
 /* Kopf: Datum, großer Titel, Sprachwahl / 머리: 날짜, 큰 제목, 언어 */
 header { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
 .date { margin: 0 0 2px; font-size: 14px; color: var(--muted); letter-spacing: .02em; }
-h1 { font: 700 32px/1.15 var(--serif); letter-spacing: -.02em; margin: 0; }
-.lang { display: flex; gap: 12px; padding-bottom: 6px; }
+h1 { margin: 0; font-size: 27px; font-weight: 800; line-height: 1.15; letter-spacing: -.03em; white-space: nowrap; }
+.lang { flex: none; display: flex; gap: 12px; padding-bottom: 6px; }
 .lang button { font-size: 15px; color: var(--muted); padding: 4px 0; border-bottom: 2px solid transparent; }
-.lang button.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+.lang button.on { color: var(--accent); font-weight: 600; border-bottom-color: var(--accent); }
 
-/* Reiter als unterstrichene Wörter / 탭은 밑줄 친 글자로 */
-.tabs { display: flex; gap: 22px; overflow-x: auto; margin: 0 -20px 18px; padding: 0 20px; border-bottom: 1px solid var(--line); scrollbar-width: none; }
+/* Reiter: grauer Balken, der gewählte liegt weiß obenauf / 탭: 회색 띠, 고른 탭만 흰색 */
+.tabs { display: flex; gap: 4px; overflow-x: auto; margin: 0 0 16px; padding: 4px; background: var(--tabbar); border-radius: 13px; scrollbar-width: none; }
 .tabs::-webkit-scrollbar { display: none; }
-.tab { flex: none; padding: 10px 0 8px; white-space: nowrap; font-size: 17px; color: var(--muted); border-bottom: 3px solid transparent; }
-.tab.on { color: var(--ink); font-family: var(--serif); font-weight: 700; border-bottom-color: var(--ink); }
-.tab .n { font: 700 13px var(--sans); color: var(--accent); margin-left: 3px; vertical-align: 7px; }
+.tab { flex: none; padding: 8px 13px; white-space: nowrap; font-size: 15px; color: var(--muted); border-radius: 10px; }
+.tab.on { color: var(--ink); font-weight: 700; background: var(--card); box-shadow: 0 1px 3px rgba(20, 24, 33, .14); }
+.tab .n { font-size: 13px; font-weight: 700; line-height: normal; color: var(--accent); margin-left: 5px; }
 
 .banner {
   display: block; width: 100%; text-align: left; margin-bottom: 16px; padding: 11px 14px; font-size: 16px; font-weight: 600;
-  background: var(--warn-bg); color: var(--ink); border-left: 3px solid var(--accent); border-radius: 2px 8px 8px 2px;
+  background: var(--warn-bg); color: var(--warn); border-radius: 13px;
 }
 
-/* Eingabe: eine Linie wie im Heft / 입력 칸은 공책 줄처럼 */
-.add { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px; }
+/* Eingabe und Suche / 입력과 검색 */
+.add { display: flex; gap: 10px; margin-bottom: 14px; }
 .add input, .search input {
-  flex: 1; min-width: 0; width: 100%; padding: 10px 2px; font-size: 18px; background: none; border: 0; border-radius: 0;
-  border-bottom: 2px solid var(--ink); outline: 0; -webkit-appearance: none; appearance: none;
+  flex: 1; min-width: 0; width: 100%; padding: 12px 14px; font-size: 18px; outline: 0; -webkit-appearance: none; appearance: none;
+  background: var(--card); border: 1px solid var(--line); border-radius: 13px; box-shadow: 0 1px 2px rgba(20, 24, 33, .05);
 }
 .add input::placeholder, .search input::placeholder { color: var(--muted); opacity: 1; }
-.add input:focus, .search input:focus { border-bottom-color: var(--accent); }
-.add button, .btn {
-  padding: 0 18px; min-height: 44px; border-radius: 10px; background: var(--ink); color: var(--bg);
-  font-family: var(--serif); font-weight: 700;
-}
-.btn.ghost { background: none; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.add input:focus, .search input:focus { border-color: var(--accent); }
+.add button, .btn { padding: 0 18px; min-height: 44px; border-radius: 13px; background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.ghost { background: none; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
 .search { position: relative; margin-bottom: 6px; }
-.search input { padding-right: 40px; border-bottom-width: 1px; border-bottom-color: var(--muted); font-size: 17px; }
+.search input { padding-right: 40px; font-size: 17px; }
 .search input::-webkit-search-cancel-button { display: none; }
-.search .x { position: absolute; right: 0; top: 50%; transform: translateY(-50%); }
+.search .x { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
 
 .sugg { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 0 0 14px; font-size: 14px; color: var(--muted); }
 .sugg span { margin-right: 2px; }
-.sugg .chip { border-style: dashed; border-color: var(--muted); }
 
-/* Listen: gestrichelte Zeilen statt Kästen / 목록은 상자 대신 점선 줄 */
-ul { list-style: none; margin: 0; padding: 0; }
+/* Listen: eine weiße Karte, Zeilen mit feiner Linie / 목록: 흰 카드 하나, 줄마다 가는 선 */
+ul { list-style: none; margin: 0; padding: 0 16px; background: var(--card); border-radius: 16px; box-shadow: var(--shadow); }
 li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+li:last-child { border-bottom: 0; }
 li.flash { background: var(--soft); }
 li input[type=checkbox] {
-  -webkit-appearance: none; appearance: none; flex: none; width: 24px; height: 24px; margin: 0; cursor: pointer;
-  border: 1.5px solid var(--ink); border-radius: 7px; background: none center / 16px no-repeat;
+  -webkit-appearance: none; appearance: none; flex: none; width: 26px; height: 26px; margin: 0; cursor: pointer;
+  border: 1.5px solid var(--ring); border-radius: 50%; background: none center / 16px no-repeat;
 }
 li input[type=checkbox]:checked {
-  background-color: var(--ink);
+  background-color: var(--accent); border-color: var(--accent);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%23f7f1e6' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark) {
@@ -103,23 +97,24 @@ li input[type=checkbox]:checked {
 }
 .pick { flex: 1; min-width: 0; min-height: 32px; text-align: left; }
 .name { overflow-wrap: anywhere; font-size: 18px; font-weight: 600; }
-.alt { color: var(--muted); font-size: 15px; font-weight: 400; margin-left: 6px; }
-.note { font-size: 15px; font-weight: 600; color: var(--accent); margin-left: 8px; white-space: nowrap; }
-.note::before { content: "· "; color: var(--muted); }
+.alt { display: inline-block; color: var(--muted); font-size: 15px; font-weight: 400; margin-left: 6px; }
+.note {
+  margin-left: 8px; padding: 1px 7px; border-radius: 6px; white-space: nowrap;
+  font-size: 15px; font-weight: 600; color: var(--accent); background: var(--soft);
+}
 .x { color: var(--muted); padding: 6px 8px; font-size: 20px; line-height: 1; border-radius: 8px; }
 .x:hover { color: var(--ink); }
 .move { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); padding: 0 0 4px 36px; }
 .move input {
   flex: 1 1 130px; min-width: 0; padding: 7px 10px; font-size: 16px; border-radius: 8px;
-  border: 1px solid var(--line); background: var(--card);
+  border: 1px solid var(--line); background: var(--field);
 }
 .move input:focus { outline: 0; border-color: var(--ink); }
-.empty { color: var(--muted); text-align: center; padding: 44px 12px; font-family: var(--serif); }
+.empty { color: var(--muted); text-align: center; padding: 44px 12px; }
+.chip { padding: 6px 12px; border-radius: 999px; background: var(--soft); color: var(--accent); font-size: 15px; font-weight: 600; }
+.sp { flex: 1; }
 
-/* Gekauft: Abschnitte mit Tintenstrich, Lagerort als Farbpunkt / 구입한 것: 먹선 아래 구역, 보관 장소는 색 점 */
-h2 { display: flex; align-items: baseline; gap: 8px; font: 700 20px/1.3 var(--serif); margin: 30px 0 0; padding-bottom: 7px; border-bottom: 2px solid var(--ink); }
-h2 .n { font: 600 14px var(--sans); color: var(--muted); }
-.hint { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+/* Gezeichnete Symbole / 선으로 그린 아이콘 */
 .ic {
   display: inline-block; flex: none; width: 1.2em; height: 1.2em; vertical-align: -.22em; margin-right: .35em; align-self: center;
   fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round;
@@ -127,101 +122,33 @@ h2 .n { font: 600 14px var(--sans); color: var(--muted); }
 .ic.fridge { color: var(--fridge); }
 .ic.freezer { color: var(--freezer); }
 .ic.pantry { color: var(--pantry); }
-.seg .ic { margin-right: 0; }
-.seg button.on .ic { color: inherit; }
-h1 .ic { width: .9em; height: .9em; vertical-align: -.08em; margin-right: .25em; }
+h1 .ic { width: .9em; height: .9em; vertical-align: -.08em; margin-right: .25em; color: var(--accent); }
 h2 .ic { width: 1.25em; height: 1.25em; margin-right: 0; stroke-width: 2.1; }
-.banner .ic { color: var(--accent); }
-.s-item { display: block; padding: 0; }
+
+/* Gekauft: ein Abschnitt je Lagerort / 구입한 것: 보관 장소마다 한 구역 */
+h2 { display: flex; align-items: baseline; gap: 8px; margin: 26px 2px 8px; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--muted); }
+h2 .n { font-size: 14px; font-weight: 600; line-height: normal; }
+.hint { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+.s-item { display: flow-root; padding: 0; }
 .s-top { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 0; min-height: 46px; }
 .s-top .name { flex: 1; min-width: 0; }
 .chev { color: var(--muted); font-size: 12px; }
-.badge { flex: none; font-size: 15px; font-weight: 600; color: var(--ok); font-variant-numeric: tabular-nums; }
-.badge.warn { color: var(--warn); box-shadow: inset 0 -6px 0 var(--warn-bg); }
-.badge.bad { color: var(--bad); background: var(--bad-bg); padding: 1px 7px; border-radius: 5px; }
-.badge.none { color: var(--muted); font-weight: 400; }
-.s-item .seg { margin-bottom: 12px; }
-.s-item .move { padding-left: 0; }
-.s-item .s-row { margin: 0 0 14px; }
-.s-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; margin-top: 8px; }
-.s-row label { display: flex; align-items: center; gap: 6px; flex: none; white-space: nowrap; color: var(--muted); }
-.s-row .chip { white-space: nowrap; }
-.s-row input[type=date] { padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-size: 15px; color: var(--ink); }
-.seg { display: flex; gap: 6px; font-size: 15px; }
+.badge {
+  flex: none; padding: 2px 9px; border-radius: 999px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--ok); background: var(--ok-bg);
+}
+.badge.warn { color: var(--warn); background: var(--warn-bg); }
+.badge.bad { color: var(--bad); background: var(--bad-bg); }
+.badge.none { color: var(--muted); font-weight: 400; background: none; }
+.seg { display: flex; gap: 4px; margin-bottom: 12px; }
 .seg button {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 6px; white-space: nowrap;
-  border-radius: 8px; box-shadow: inset 0 0 0 1px var(--muted); background: var(--card); min-height: 40px;
+  flex: 1 1 auto; min-width: 0; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 8px 4px; white-space: nowrap; font-size: 14px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); background: var(--field);
 }
-.seg button.on { background: var(--ink); color: var(--bg); box-shadow: none; font-family: var(--serif); font-weight: 700; }
-.chip { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--muted); background: var(--card); font-size: 15px; color: var(--ink); }
-.chip:hover { border-color: var(--ink); }
-.sp { flex: 1; }
-
-#toast {
-  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 10;
-  display: flex; align-items: center; gap: 16px; max-width: calc(100% - 32px); padding: 12px 18px; border-radius: 10px;
-  background: var(--ink); color: var(--bg); font-size: 15px; box-shadow: 0 6px 20px rgba(42, 36, 32, .28);
-}
-#toast button { color: inherit; font-family: var(--serif); font-weight: 700; box-shadow: inset 0 -2px 0 var(--accent); white-space: nowrap; }
-
-/* Konto und Verwaltung, ganz unten und leise / 계정과 관리, 맨 아래에 조용히 */
-.foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.link { color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px; }
-.cloud { margin-top: 32px; padding: 16px; border: 1px dashed var(--muted); border-radius: 10px; font-size: 15px; color: var(--muted); }
-.cloud p { margin: 0 0 12px; }
-.cloud .foot { margin-top: 0; align-items: center; }
-.shared { margin-top: 32px; text-align: center; }
-.shared + .shared { margin-top: 0; }
-.shared summary { display: inline-block; list-style: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 8px; }
-.shared summary::-webkit-details-marker { display: none; }
-.shared .cloud { margin-top: 6px; text-align: left; }
-.code { color: var(--ink); letter-spacing: 1px; user-select: all; }
-
-/* ---------- Karten / 카드 ---------- */
-h1 { font-size: 27px; font-weight: 800; letter-spacing: -.03em; white-space: nowrap; }
-.lang { flex: none; }
-h1 .ic { color: var(--accent); }
-.lang button.on { border-bottom-color: var(--accent); color: var(--accent); }
-/* Reiter: grauer Balken, der gewählte liegt weiß obenauf / 탭: 회색 띠, 고른 탭만 흰색 */
-.tabs { border-bottom: 0; gap: 4px; background: var(--tabbar); border-radius: 13px; padding: 4px; margin: 0 0 16px; }
-.tab { padding: 8px 13px; border-radius: 10px; border-bottom: 0; font-size: 15px; }
-.tab.on { background: var(--card); box-shadow: 0 1px 3px rgba(20, 24, 33, .14); border-bottom: 0; }
-.tab .n { color: var(--accent); vertical-align: 0; margin-left: 5px; }
-.banner { border-left: 0; border-radius: 13px; color: var(--warn); }
-.banner .ic { color: var(--warn); }
-.add { align-items: stretch; }
-.add input, .search input {
-  background: var(--card); border: 1px solid var(--line); border-radius: 13px; padding: 12px 14px; box-shadow: 0 1px 2px rgba(20, 24, 33, .05);
-}
-.search input { padding-right: 40px; }
-.search .x { right: 6px; }
-.add input:focus, .search input:focus { border-color: var(--accent); }
-.add button, .btn { background: var(--accent); color: var(--accent-ink); border-radius: 13px; }
-.btn.ghost { color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
-ul { background: var(--card); border-radius: 16px; padding: 0 16px; box-shadow: var(--shadow); }
-li:last-child { border-bottom: 0; }
-h2 { border-bottom: 0; font-size: 15px; color: var(--muted); margin: 26px 2px 8px; padding: 0; }
-li input[type=checkbox] { border: 1.5px solid var(--ring); border-radius: 50%; width: 26px; height: 26px; }
-li input[type=checkbox]:checked { background-color: var(--accent); border-color: var(--accent); }
-.seg button { border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); background: var(--field); }
-.seg { gap: 4px; }
-.seg button { flex: 1 1 auto; min-width: 0; padding: 8px 4px; gap: 4px; font-size: 14px; }
-.seg button.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
-.s-item { display: flow-root; }
-.s-item .move input { flex-basis: 96px; }
-.alt { display: inline-block; }
-.chip, .sugg .chip { border: 0; background: var(--soft); color: var(--accent); border-radius: 999px; font-weight: 600; }
-.note { color: var(--accent); background: var(--soft); border-radius: 6px; padding: 1px 7px; }
-.note::before { content: none; }
-.badge { background: var(--ok-bg); padding: 2px 9px; border-radius: 999px; font-size: 14px; }
-.badge.warn { background: var(--warn-bg); box-shadow: none; }
-.badge.bad { background: var(--bad-bg); border-radius: 999px; padding: 2px 9px; }
-.badge.none { background: none; }
-.move input, .s-row input[type=date] { background: var(--field); }
-.cloud { border: 0; background: var(--card); border-radius: 16px; box-shadow: var(--shadow); }
-.shared .cloud { margin-top: 6px; }
-#toast button { box-shadow: none; text-decoration: underline; text-underline-offset: 3px; }
-/* Aufgeklappter Artikel in "Gekauft" / 구입한 것에서 펼친 항목 */
+.seg button.on { background: var(--accent); color: var(--accent-ink); box-shadow: none; font-weight: 600; }
+.seg .ic { margin-right: 0; }
+.seg button.on .ic { color: inherit; }
+/* Aufgeklappter Artikel: Notiz und Datum, darunter drei Aktionen / 펼친 항목: 메모와 날짜, 그 아래 동작 셋 */
 .s-edit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-bottom: 10px; }
 .fld { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 13px; color: var(--muted); }
 .fld input {
@@ -239,12 +166,36 @@ li input[type=checkbox]:checked { background-color: var(--accent); border-color:
   font-size: 14px; font-weight: 600; line-height: 1.2;
 }
 .s-acts .main { background: var(--accent); color: var(--accent-ink); }
+
+#toast {
+  position: fixed; left: 0; right: 0; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 10;
+  width: max-content; max-width: calc(100% - 32px); margin: 0 auto;
+  display: flex; align-items: center; gap: 16px; padding: 12px 18px; border-radius: 10px;
+  background: var(--ink); color: var(--bg); font-size: 15px; box-shadow: 0 6px 20px rgba(42, 36, 32, .28);
+}
+#toast button { color: inherit; font-weight: 700; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Konto und Verwaltung, ganz unten und leise / 계정과 관리, 맨 아래에 조용히 */
+.foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.link { color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; padding: 6px 2px; }
+span.link { text-decoration: none; }
+.cloud { margin-top: 32px; padding: 16px; border-radius: 16px; font-size: 15px; color: var(--muted); background: var(--card); box-shadow: var(--shadow); }
+.cloud p { margin: 0 0 12px; }
+.cloud .foot { margin-top: 0; align-items: center; }
+.shared { margin-top: 32px; text-align: center; }
+.shared + .shared { margin-top: 0; }
+.shared summary { display: inline-block; list-style: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 8px; }
+.shared summary::-webkit-details-marker { display: none; }
+.shared .cloud { margin-top: 6px; text-align: left; }
+.code { color: var(--ink); letter-spacing: 1px; user-select: all; }
 </style>
+
 </head>
 <body>
 <main id="app"></main>
 <script>
 'use strict';
+const app = document.getElementById('app');
 
 // ---------- Texte / 문구 ----------
 const T = {
@@ -389,12 +340,12 @@ function tr(name, lang = S.lang) {
   };
   const n = clean(name);
   // Selbst korrigierte Übersetzung geht vor / 직접 고친 번역이 먼저
-  const f = (S.fix || []).find(f => f.id === fixId(n));
+  const id = fixId(n), f = S.fix.find(f => f.id === id);
   if (f) return srcLang(n) !== lang ? f.to : n;
   const r = one(n) || one(n.replace(/ /g, '')) || n.split(' ').map(w => one(w) || w).join(' ');
   if (r !== n) return r;
   // Nicht im Wörterbuch: gespeicherte Online-Übersetzung / 사전에 없으면 저장해 둔 온라인 번역
-  const c = S.tx && S.tx[n];
+  const c = S.tx[n];
   return c && srcLang(n) !== lang ? c : n;
 }
 
@@ -405,18 +356,20 @@ function tr(name, lang = S.lang) {
 const clean = s => s.trim().replace(/\s+/g, ' ');
 const srcLang = s => /[ㄱ-ㆎ가-힣]/.test(s) ? 'ko' : 'de';
 const asked = new Set();
-// Schlüssel einer korrigierten Übersetzung: der eingegebene Name als Zeichencodes / 고친 번역의 열쇠: 입력한 이름의 문자 코드
-const fixId = n => 'f' + [...n.toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
+// Text als Zeichencodes: taugt als Feldname in der geteilten Liste / 글자를 문자 코드로 바꿈: 공유 목록의 필드 이름으로 쓸 수 있음
+const asKey = s => [...s.toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
+// Schlüssel einer korrigierten Übersetzung: der eingegebene Name / 고친 번역의 열쇠: 입력한 이름
+const fixId = n => 'f' + asKey(n);
 function translateOnline(name) {
   const n = clean(name), from = srcLang(n), to = from === 'ko' ? 'de' : 'ko';
-  if (!/\p{L}/u.test(n) || asked.has(n) || (S.tx && S.tx[n]) || tr(n, to) !== n) return;
+  if (!/\p{L}/u.test(n) || asked.has(n) || S.tx[n] || tr(n, to) !== n) return;
   asked.add(n);
   fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(n)}&langpair=${from}|${to}`)
     .then(r => r.json())
     .then(j => {
       const out = clean((j.responseData && j.responseData.translatedText) || '');
       if (j.responseStatus != 200 || !out || out.toLowerCase() === n.toLowerCase() || /MYMEMORY WARNING/i.test(out)) return;
-      (S.tx = S.tx || {})[n] = out;
+      S.tx[n] = out;
       // Haltbarkeit nachtragen, wenn erst die Übersetzung das Lebensmittel erkennen lässt
       // 번역으로 비로소 식품을 알아본 경우 소비기한 채우기
       for (const x of S.stock) if (clean(x.name) === n && !x.days && !x.manual) {
@@ -446,15 +399,16 @@ const SHAPES = {
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   cart: '<path d="M3 4.5h2.6l2.3 9.5h9.3l1.6-7H6.4"/><circle cx="9.3" cy="18.3" r="1.4"/><circle cx="16.3" cy="18.3" r="1.4"/>',
   people: '<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5M15.5 5.8a3 3 0 010 5.4M17.5 14.4c1.6.8 2.6 2.4 3 4.6"/>',
-  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.500v2.500M3 12h2.500M18.5 12H21M5.6 5.600l1.8 1.800M16.6 16.600l1.8 1.800M5.6 18.400l1.8-1.800M16.6 7.400l1.8-1.8"/>',
-  bell: '<path d="M6 16.500V11a6 6 0 0112 0v5.500l1.5 2h-15zM10 20.500a2.1 2.1 0 004 0"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>',
+  bell: '<path d="M6 16.5V11a6 6 0 0112 0v5.5l1.5 2h-15zM10 20.5a2.1 2.1 0 004 0"/>',
 };
 const ic = name => `<svg class="ic ${name}" viewBox="0 0 24 24" aria-hidden="true">${SHAPES[name]}</svg>`;
-const ICON = Object.fromEntries(['fridge', 'freezer', 'pantry'].map(l => [l, ic(l)]));
 
 const FROZEN_DAYS = 90;
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 let S = load();
+// tx: gespeicherte Online-Übersetzungen, nur auf diesem Gerät / 저장해 둔 온라인 번역, 이 기기에만
+S.tx = S.tx || {};
 // memo: Artikelnamen, die zuletzt im Vorrat lagen / 지난번에 실온에 둔 물건 이름
 S.memo = S.memo || [];
 // fix: von Hand korrigierte Übersetzungen { id, to } / 직접 고친 번역
@@ -462,12 +416,11 @@ S.fix = S.fix || [];
 // hist: was schon gekauft wurde { id, name, n: wie oft, store: zuletzt wo } – für die Vorschläge beim Eintragen.
 // 지금까지 산 것 { id, name, n: 횟수, store: 마지막으로 산 목록 }. 입력할 때 추천으로 씀.
 S.hist = S.hist || [];
-const histId = name => 'h' + [...clean(name).toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
+const histId = name => 'h' + asKey(clean(name));
 // Gleicher Artikel, egal in welcher Sprache eingegeben ("우유" = "Milch") / 어느 언어로 썼든 같은 물건
 const sameKey = name => searchKey(tr(name, 'de'));
-// Schlüssel dafür: der Name auf Deutsch, als Zeichencodes (taugt als Feldname in der geteilten Liste).
-// 그 열쇠: 독일어 이름을 문자 코드로 바꾼 것(공유 목록의 필드 이름으로 쓸 수 있게).
-const memoId = name => 'n' + [...tr(name, 'de').toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
+// Schlüssel für "lag im Vorrat": der Name auf Deutsch / '실온에 뒀음'의 열쇠: 독일어 이름
+const memoId = name => 'n' + asKey(tr(name, 'de'));
 
 function load() {
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.stores) return s; } catch (e) {}
@@ -479,8 +432,9 @@ function load() {
 }
 // Speichert auf dem Gerät und schickt Änderungen an die geteilte Liste, falls verbunden.
 // 기기에 저장하고, 연결돼 있으면 바뀐 내용을 공유 목록으로 보냄.
+const keep = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  keep();
   if (window.cloud) window.cloud.push();
 }
 
@@ -514,7 +468,7 @@ function render() {
     <button data-act="lang" data-v="de" class="${S.lang === 'de' ? 'on' : ''}">Deutsch</button></div></header>`;
 
   h += '<nav class="tabs">';
-  h += `<button class="tab stock ${S.active === 'stock' ? 'on' : ''}" data-act="tab" data-v="stock">${L.stock}${S.stock.length ? `<span class="n">${S.stock.length}</span>` : ''}</button>`;
+  h += `<button class="tab ${S.active === 'stock' ? 'on' : ''}" data-act="tab" data-v="stock">${L.stock}${S.stock.length ? `<span class="n">${S.stock.length}</span>` : ''}</button>`;
   for (const s of S.stores) {
     const n = S.items.filter(i => i.store === s.id).length;
     h += `<button class="tab ${S.active === s.id ? 'on' : ''}" data-act="tab" data-v="${s.id}">${esc(storeName(s))}${n ? `<span class="n">${n}</span>` : ''}</button>`;
@@ -542,21 +496,20 @@ function render() {
   // Liste löschen liegt ganz unten hinter einem Aufklapper, damit man es nicht versehentlich trifft.
   // 목록 삭제는 실수로 누르지 않게 맨 아래 접힌 칸 안에.
   const cur = S.stores.find(s => s.id === S.active);
-  if (cur) h += `<details class="shared manage"><summary>${ic('gear')}${L.manage}</summary><div class="cloud">
+  if (cur) h += `<details class="shared"><summary>${ic('gear')}${L.manage}</summary><div class="cloud">
     <button class="link" data-act="delStore">${L.delStore(esc(storeName(cur)))}</button></div></details>`;
   // Getippten Text und Fokus über das Neuzeichnen retten / 다시 그려도 입력 중인 글자와 포커스 유지
-  const root = document.getElementById('app');
-  const typing = [...root.querySelectorAll('input[name]')].map(el => [el.name, el.value, el === document.activeElement]);
-  root.innerHTML = h;
+  const typing = [...app.querySelectorAll('input[name]')].map(el => [el.name, el.value, el === document.activeElement]);
+  app.innerHTML = h;
   for (const [name, value, focused] of typing) {
-    const el = root.querySelector(`input[name="${name}"]`);
+    const el = app.querySelector(`input[name="${name}"]`);
     if (el && (value || focused)) el.value = value;
     if (el && focused) el.focus();
   }
   filterSugg();
   if (flashId) {
     // Den schon vorhandenen Artikel kurz hervorheben / 이미 있는 항목을 잠깐 강조
-    const box = root.querySelector(`input[data-act=buy][data-v="${flashId}"]`), li = box && box.closest('li');
+    const box = app.querySelector(`input[data-act=buy][data-v="${flashId}"]`), li = box && box.closest('li');
     flashId = null;
     if (li) { li.classList.add('flash'); li.scrollIntoView({ block: 'nearest' }); setTimeout(() => li.classList.remove('flash'), 1600); }
   }
@@ -606,7 +559,7 @@ function addItem(name) {
 }
 
 // ---------- Hinweis unten, mit "Rückgängig" / 아래쪽 알림과 되돌리기 ----------
-// back = was zurückkommt ({ stores, items, stock }) und was dafür wieder verschwindet ({ drop: { items: [id] } }).
+// back = was zurückkommt ({ stores, items, stock, hist }) und was dafür wieder verschwindet ({ drop: { items: [id] } }).
 // Es werden nur diese Einträge angefasst, damit inzwischen eingetroffene Änderungen der anderen bleiben.
 // back = 되살릴 것과 대신 없앨 것. 그 항목만 건드려서, 그사이 가족이 바꾼 내용은 그대로 둠.
 const toastEl = document.body.appendChild(Object.assign(document.createElement('div'), { id: 'toast', hidden: true }));
@@ -623,7 +576,7 @@ toastEl.addEventListener('click', e => {
   if (!e.target.closest('button') || !undo) return;
   const u = undo;
   undo = null; toastEl.hidden = true;
-  for (const k of ['stores', 'items', 'stock']) {
+  for (const k of ['stores', 'items', 'stock', 'hist']) {
     const drop = (u.drop && u.drop[k]) || [];
     S[k] = S[k].filter(x => !drop.includes(x.id));
     for (const x of u[k] || []) if (!S[k].some(y => y.id === x.id)) S[k].push(x);
@@ -663,15 +616,15 @@ function renderStock(L, due) {
     const xs = S.stock.filter(x => (LOCS.includes(x.loc) ? x.loc : null) === loc)
       .sort((a, b) => (a.expires || '9999').localeCompare(b.expires || '9999'));
     if (!xs.length) continue;
-    h += `<section class="stock-sec"><h2>${loc ? ICON[loc] : ic('box')}${loc ? L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
+    h += `<section class="stock-sec"><h2>${ic(loc || 'box')}${loc ? L[loc] : L.unsorted}<span class="n">${xs.length}</span></h2>`;
     if (!loc) h += `<p class="hint">${L.unsortedHint}</p>`;
     h += '<ul>' + xs.map(x => stockItem(x, L)).join('') + '</ul></section>';
   }
   h += `<p class="empty" id="no-match" hidden>${L.noMatch}</p>`;
   if ('Notification' in window) {
     const p = Notification.permission;
-    h += `<div class="foot">${p === 'granted' ? `<span class="link" style="text-decoration:none">${ic('bell')}${L.notifOk}</span>`
-      : p === 'denied' ? `<span class="link" style="text-decoration:none">${L.notifNo}</span>`
+    h += `<div class="foot">${p === 'granted' ? `<span class="link">${ic('bell')}${L.notifOk}</span>`
+      : p === 'denied' ? `<span class="link">${L.notifNo}</span>`
       : `<button class="btn ghost" data-act="notif">${ic('bell')}${L.notifOn}</button>`}</div>`;
   }
   return h;
@@ -696,11 +649,9 @@ function stockItem(x, L) {
   // Eine Zeile pro Artikel; Antippen klappt die Bedienung auf. Noch nicht Eingeräumtes zeigt gleich die Lagerorte.
   // 물건마다 한 줄, 누르면 펼쳐짐. 정리 전 물건은 보관 장소 버튼을 바로 보여 줌.
   const open = x.id === openId, placed = LOCS.includes(x.loc);
-  // Suchtext: Name in beiden Sprachen und Notiz / 검색용 글: 두 언어 이름과 메모
-  const find = searchKey([x.name, tr(x.name, 'ko'), tr(x.name, 'de'), x.note || ''].join(' '));
-  return `<li class="s-item" data-find="${esc(find)}"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
+  return `<li class="s-item" data-find="${esc(findKey(x))}"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
       <span class="name">${nameHtml(x.name)}${noteHtml(x)}</span>${badge}<span class="chev">${open ? '▴' : '▾'}</span></button>
-    ${open || !placed ? `<div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ICON[l]} ${L[l]}</button>`).join('')}</div>` : ''}
+    ${open || !placed ? `<div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ic(l)} ${L[l]}</button>`).join('')}</div>` : ''}
     ${open ? `<div class="s-edit">
         <label class="fld">${L.memo}<input name="note_${x.id}" data-act="memo" data-v="${x.id}" value="${esc(x.note || '')}" placeholder="${L.memoPh}" maxlength="60" autocomplete="off" enterkeyhint="done"></label>
         <label class="fld">${L.exp}<input type="date" data-act="exp" data-v="${x.id}" value="${x.expires || ''}"></label></div>
@@ -713,6 +664,8 @@ function stockItem(x, L) {
 // Groß/klein und Leerzeichen egal: "Voll Milch" findet "Vollmilch", "두 부" findet "두부".
 // 대소문자와 띄어쓰기 상관없이 찾기.
 const searchKey = s => String(s).toLowerCase().replace(/\s+/g, '');
+// Suchtext eines Artikels: Name in beiden Sprachen und Notiz / 물건의 검색용 글: 두 언어 이름과 메모
+const findKey = x => searchKey([x.name, tr(x.name, 'ko'), tr(x.name, 'de'), x.note || ''].join(' '));
 function filterStock() {
   const box = app.querySelector('input[data-search]');
   if (!box) return;
@@ -797,7 +750,7 @@ const actions = {
     const old = S.hist.find(h => h.id === histId(i.name));
     S.hist = S.hist.filter(h => h !== old);
     S.hist.push({ id: histId(i.name), name: clean(i.name), n: ((old && old.n) || 0) + 1, store: i.store });
-    toast(t().boughtMsg, { items: [i], drop: { stock: [x.id] } });
+    toast(t().boughtMsg, { items: [i], hist: old ? [old] : [], drop: { stock: [x.id], hist: [histId(i.name)] } });
   },
   // Lagerort wählen; ein selbst eingetragenes Datum bleibt, ein geschätztes wird neu berechnet.
   // 보관 장소 선택. 직접 입력한 날짜는 그대로 두고, 자동 계산한 날짜만 다시 계산.
@@ -813,9 +766,17 @@ const actions = {
     if (loc === 'pantry') S.memo.push({ id: key, loc });
     if (!x.manual && x.days) { x.expires = addDays(x.bought, shelfDays(x)); }
   },
+  // Notiz speichern, ohne neu zu zeichnen: sonst ginge das Antippen eines Knopfs direkt nach dem Schreiben verloren.
+  // 메모는 화면을 다시 그리지 않고 저장. 다시 그리면 쓰자마자 누른 버튼이 안 눌림.
   memo(v, el) {
     const x = S.stock.find(x => x.id === v), note = el.value.trim();
-    if (x && note) x.note = note; else if (x) delete x.note;
+    if (!x || note === (x.note || '')) return false;
+    if (note) x.note = note; else delete x.note;
+    save();
+    const li = el.closest('li');
+    li.querySelector('.name').innerHTML = nameHtml(x.name) + noteHtml(x);
+    li.dataset.find = findKey(x);
+    return false;
   },
   exp(v, el) {
     const x = S.stock.find(x => x.id === v);
@@ -862,7 +823,6 @@ function run(act, v, el) {
   save(); render(); checkExpiry();
   if (act === 'noteOpen' && noteId) app.querySelector('form[data-act=note] input').focus();
 }
-const app = document.getElementById('app');
 // iPhone-Safari beachtet user-scalable=no nicht; dort das Zwei-Finger-Vergrößern eigens abfangen.
 // 아이폰 사파리는 user-scalable=no를 무시해서, 두 손가락 확대를 따로 막음.
 for (const type of ['gesturestart', 'gesturechange']) document.addEventListener(type, e => e.preventDefault(), { passive: false });
@@ -881,10 +841,11 @@ app.addEventListener('click', e => {
   const el = e.target.closest('button[data-act]');
   if (el) run(el.dataset.act, el.dataset.v, el);
 });
-// Eingabetaste im Notizfeld speichert (das Feld verlassen löst 'change' aus) / 메모 칸에서 엔터를 누르면 저장
+// Die Notiz speichert sich beim Verlassen des Felds; die Eingabetaste verlässt es. / 메모는 칸을 벗어나면 저장. 엔터를 누르면 칸을 벗어남.
 app.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[data-act=memo]')) e.target.blur(); });
+app.addEventListener('focusout', e => { if (e.target.matches('input[data-act=memo]')) run('memo', e.target.dataset.v, e.target); });
 app.addEventListener('change', e => {
-  const el = e.target.closest('input[data-act]');
+  const el = e.target.closest('input[data-act]:not([data-act=memo])');
   if (!el) return;
   // Kurz abgehakt zeigen, dann nach "Gekauft" verschieben / 체크 표시를 잠깐 보여 준 뒤 이동
   if (el.dataset.act === 'buy') setTimeout(() => run('buy', el.dataset.v, el), 220);
@@ -893,7 +854,7 @@ app.addEventListener('change', e => {
 app.addEventListener('submit', e => {
   e.preventDefault();
   if (e.target.dataset.act === 'note') {
-    const id = e.target.dataset.v, i = [...S.items, ...S.stock].find(i => i.id === id), note = e.target.elements['note_' + id].value.trim();
+    const id = e.target.dataset.v, i = S.items.find(i => i.id === id), note = e.target.elements['note_' + id].value.trim();
     if (i && note) i.note = note; else if (i) delete i.note;
     if (i) {
       // Geänderte Übersetzung merken; ein geleertes Feld holt die automatische zurück.
@@ -941,7 +902,7 @@ function checkExpiry() {
     notify(t().nTitle, t().nBody(tr(x.name), daysLeft(x.expires)), x.id);
     seen[x.id] = x.expires; changed = true;
   }
-  if (changed) try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  if (changed) keep();
 }
 
 render();
@@ -1017,7 +978,7 @@ if (cfg) {
       const list = k => Object.values(JSON.parse(JSON.stringify(S.remote[k]))).sort((a, b) => a.id < b.id ? -1 : 1);
       S.stores = list('stores').sort((a, b) => rank(a) - rank(b));
       S.items = list('items'); S.stock = list('stock'); S.memo = list('memo'); S.fix = list('fix'); S.hist = list('hist');
-      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+      keep();
       render(); checkExpiry();
     }, e => console.warn('sync', e));
   }
