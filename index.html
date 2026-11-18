@@ -18,19 +18,19 @@
    글꼴은 프리텐다드(인터넷에서 불러옴, 안 되면 기기 글꼴). */
 :root {
   --brand: #0f9d58; --on-brand: #ffffff; --tab-ink: #0b6b3c; --sheet: #ffffff; --ink: #17231c; --muted: #617068; --line: #e9eeeb;
-  --accent: #0b7a45; --soft: #e4f6ec; --field: #f1f5f2; --ring: #b9c6be; --check: #0f9d58;
+  --accent: #0b7a45; --soft: #e4f6ec; --field: #f1f5f2; --check: #0f9d58; --on-check: #ffffff;
   --sun: #ffd84a; --sun-ink: #3d3200; --memo: #6b5600; --memo-bg: #fff3c2;
-  --ok: #0b6b3c; --ok-bg: #e4f6ec; --warn: #b9480c; --warn-bg: #ffe6d1; --bad: #ffffff; --bad-bg: #d92d20;
-  --fridge: #0f9d58; --freezer: #2f7de1; --pantry: #e08a1e; --box: #55615a; --cold: #2f7de1; --warm: #d07d12;
+  --ok: #0b6b3c; --warn: #b9480c; --warn-bg: #ffe6d1; --bad: #ffffff; --bad-bg: #d92d20;
+  --freezer: #2f7de1; --pantry: #e08a1e; --box: #55615a; --cold: #2f7de1; --warm: #d07d12;
   --sans: "Pretendard Variable", Pretendard, system-ui, -apple-system, "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --brand: #0b7243; --tab-ink: #0b5c35; --sheet: #141916; --ink: #e9f0ec; --muted: #9aa9a0; --line: #262e29;
-    --accent: #6fdca4; --soft: #173526; --field: #1f2622; --ring: #55635b; --check: #2fbf79;
+    --accent: #6fdca4; --soft: #173526; --field: #1f2622; --check: #2fbf79; --on-check: #0c2418;
     --sun: #f2c73a; --sun-ink: #2e2600; --memo: #f2d675; --memo-bg: #3a3212;
-    --ok: #6fdca4; --ok-bg: #173526; --warn: #ffa36b; --warn-bg: #3a2618; --bad-bg: #d9463a;
-    --fridge: #0b7243; --freezer: #2a63b5; --pantry: #a8661a; --box: #3d4741; --cold: #86b4ff; --warm: #f0b35a;
+    --ok: #6fdca4; --warn: #ffa36b; --warn-bg: #3a2618; --bad-bg: #d9463a;
+    --freezer: #2a63b5; --pantry: #a8661a; --box: #3d4741; --cold: #86b4ff; --warm: #f0b35a;
   }
 }
 /* Kein Vergrößern, weder durch Doppeltippen noch mit zwei Fingern; nur Scrollen (siehe auch viewport und gesturestart).
@@ -66,16 +66,17 @@ h1 { margin: 0; font-size: clamp(23px, 7.4vw, 28px); font-weight: 800; line-heig
   background: var(--memo-bg); color: var(--memo); border-radius: 14px;
 }
 
+/* Alle Textfelder: graue Fläche, beim Schreiben ein grüner Rand / 글 쓰는 칸은 모두 회색 바탕, 쓰는 동안 초록 테두리 */
+:is(.add, .search, .move, .fld) input { min-width: 0; outline: 0; background: var(--field); border: 1.5px solid transparent; }
+:is(.add, .search, .move, .fld) input:focus { border-color: var(--check); }
+
 /* Eingabe und Suche / 입력과 검색 */
 .add { display: flex; gap: 8px; margin-bottom: 14px; }
-.add input, .search input {
-  flex: 1; min-width: 0; width: 100%; padding: 12px 14px; font-size: 18px; outline: 0; -webkit-appearance: none; appearance: none;
-  background: var(--field); border: 1.5px solid transparent; border-radius: 14px;
-}
+.add input, .search input { flex: 1; width: 100%; padding: 12px 14px; font-size: 18px; -webkit-appearance: none; appearance: none; border-radius: 14px; }
 .add input::placeholder, .search input::placeholder { color: var(--muted); opacity: 1; }
-.add input:focus, .search input:focus { border-color: var(--check); }
-.add button { padding: 0 18px; min-height: 44px; border-radius: 14px; background: var(--sun); color: var(--sun-ink); font-weight: 700; }
-.btn { padding: 0 18px; min-height: 44px; border-radius: 14px; background: var(--brand); color: var(--on-brand); font-weight: 700; }
+.add button, .btn { padding: 0 18px; min-height: 44px; border-radius: 14px; font-weight: 700; }
+.add button { background: var(--sun); color: var(--sun-ink); }
+.btn { background: var(--brand); color: var(--on-brand); }
 .btn.ghost { background: none; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
 .search { position: relative; margin-bottom: 6px; }
 .search input { padding-right: 40px; font-size: 17px; }
@@ -111,11 +112,7 @@ li input[type=checkbox]:checked {
 .x { color: var(--muted); padding: 6px 8px; font-size: 20px; line-height: 1; border-radius: 8px; }
 .x:hover { color: var(--ink); }
 .move { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); padding: 0 0 4px 38px; }
-.move input {
-  flex: 1 1 130px; min-width: 0; padding: 7px 10px; font-size: 16px; border-radius: 10px;
-  border: 1.5px solid transparent; background: var(--field);
-}
-.move input:focus { outline: 0; border-color: var(--check); }
+.move input { flex: 1 1 130px; padding: 7px 10px; font-size: 16px; border-radius: 10px; }
 .empty { color: var(--muted); text-align: center; padding: 44px 12px; }
 .chip { padding: 6px 12px; border-radius: 999px; background: var(--soft); color: var(--ok); font-size: 15px; font-weight: 600; }
 .sp { flex: 1; }
@@ -134,7 +131,7 @@ h2 {
   font-size: 15px; font-weight: 700; line-height: 1.3; color: #fff; background: var(--box);
 }
 h2 .n { font-weight: 600; opacity: .85; }
-.fridge h2 { background: var(--fridge); }
+.fridge h2 { background: var(--brand); }
 .freezer h2 { background: var(--freezer); }
 .pantry h2 { background: var(--pantry); }
 .hint { color: var(--muted); font-size: 14px; margin: 8px 4px 0; }
@@ -144,7 +141,7 @@ h2 .n { font-weight: 600; opacity: .85; }
 .chev { color: var(--muted); font-size: 12px; }
 .badge {
   flex: none; padding: 2px 9px; border-radius: 999px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums;
-  color: var(--ok); background: var(--ok-bg);
+  color: var(--ok); background: var(--soft);
 }
 .badge.warn { color: var(--warn); background: var(--warn-bg); }
 .badge.bad { color: var(--bad); background: var(--bad-bg); }
@@ -154,25 +151,20 @@ h2 .n { font-weight: 600; opacity: .85; }
   flex: 1 1 auto; min-width: 0; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 4px;
   padding: 8px 4px; white-space: nowrap; font-size: 14px; border-radius: 11px; background: var(--field);
 }
-.seg button.on { background: var(--check); color: var(--on-brand); font-weight: 700; }
+.seg button.on { background: var(--check); color: var(--on-check); font-weight: 700; }
 .seg .ic { margin-right: 0; }
 .seg .ic.fridge { color: var(--check); }
 .seg .ic.freezer { color: var(--cold); }
 .seg .ic.pantry { color: var(--warm); }
 .seg button.on .ic { color: inherit; }
-@media (prefers-color-scheme: dark) { .seg button.on { color: #0c2418; } }
 /* Aufgeklappter Artikel: Notiz und Datum, darunter drei Aktionen / 펼친 항목: 메모와 날짜, 그 아래 동작 셋 */
 .s-edit { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-bottom: 10px; }
 .fld { display: flex; flex-direction: column; gap: 3px; min-width: 0; font-size: 13px; color: var(--muted); }
-.fld input {
-  width: 100%; min-width: 0; height: 42px; padding: 0 10px; font-size: 16px; color: var(--ink);
-  border: 1.5px solid transparent; border-radius: 11px; background: var(--field);
-}
+.fld input { width: 100%; height: 42px; padding: 0 10px; font-size: 16px; color: var(--ink); border-radius: 11px; }
 /* iPhone gibt Datumsfeldern eine eigene Mindestbreite; ohne das ragt das Feld über den Rand hinaus.
    아이폰은 날짜 칸에 자체 최소 너비를 줘서, 이게 없으면 칸이 화면 밖으로 나감. */
 .fld input[type=date] { display: block; max-width: 100%; -webkit-appearance: none; appearance: none; line-height: 39px; }
 .fld input[type=date]::-webkit-date-and-time-value { text-align: left; }
-.fld input:focus { outline: 0; border-color: var(--check); }
 .s-acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
 .s-acts button {
   min-height: 42px; padding: 4px; border-radius: 11px; background: var(--soft); color: var(--ok);
@@ -202,8 +194,6 @@ span.link { text-decoration: none; }
 .shared .cloud { margin-top: 6px; text-align: left; }
 .code { color: var(--ink); letter-spacing: 1px; user-select: all; }
 </style>
-
-
 </head>
 <body>
 <main id="app"></main>
@@ -354,7 +344,7 @@ function tr(name, lang = S.lang) {
   };
   const n = clean(name);
   // Selbst korrigierte Übersetzung geht vor / 직접 고친 번역이 먼저
-  const id = fixId(n), f = S.fix.find(f => f.id === id);
+  const f = byId('fix', fixId(n));
   if (f) return srcLang(n) !== lang ? f.to : n;
   const r = one(n) || one(n.replace(/ /g, '')) || n.split(' ').map(w => one(w) || w).join(' ');
   if (r !== n) return r;
@@ -369,13 +359,14 @@ function tr(name, lang = S.lang) {
 // 결과를 저장해서 단어마다 한 번만 전송.
 const clean = s => s.trim().replace(/\s+/g, ' ');
 const srcLang = s => /[ㄱ-ㆎ가-힣]/.test(s) ? 'ko' : 'de';
+const other = lang => lang === 'ko' ? 'de' : 'ko';
 const asked = new Set();
 // Text als Zeichencodes: taugt als Feldname in der geteilten Liste / 글자를 문자 코드로 바꿈: 공유 목록의 필드 이름으로 쓸 수 있음
 const asKey = s => [...s.toLowerCase()].map(c => c.codePointAt(0).toString(36)).join('_');
 // Schlüssel einer korrigierten Übersetzung: der eingegebene Name / 고친 번역의 열쇠: 입력한 이름
 const fixId = n => 'f' + asKey(n);
 function translateOnline(name) {
-  const n = clean(name), from = srcLang(n), to = from === 'ko' ? 'de' : 'ko';
+  const n = clean(name), from = srcLang(n), to = other(from);
   if (!/\p{L}/u.test(n) || asked.has(n) || S.tx[n] || tr(n, to) !== n) return;
   asked.add(n);
   fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(n)}&langpair=${from}|${to}`)
@@ -390,14 +381,20 @@ function translateOnline(name) {
         x.days = guessDays(out);
         if (x.days) x.expires = addDays(x.bought, shelfDays(x));
       }
-      save(); render(); checkExpiry();
+      commit();
     })
     .catch(() => asked.delete(n));
 }
 // Name in der gewählten Sprache, dahinter klein die andere / 선택한 언어 이름 + 옆에 작게 다른 언어
 function nameHtml(name) {
-  const a = tr(name), b = tr(name, S.lang === 'ko' ? 'de' : 'ko');
+  const a = tr(name), b = tr(name, other(S.lang));
   return esc(a) + (b !== a ? ` <span class="alt">${esc(b)}</span>` : '');
+}
+// Übersetzung in die jeweils andere Sprache als die eingegebene; tx ist leer, wenn es keine gibt.
+// 입력한 언어의 반대쪽 번역. 번역이 없으면 tx는 빈 글.
+function txOf(name) {
+  const n = clean(name), to = other(srcLang(n)), s = tr(n, to);
+  return { n, to, tx: s !== n ? s : '' };
 }
 
 // ---------- Zustand / 상태 ----------
@@ -451,6 +448,13 @@ function save() {
   keep();
   if (window.cloud) window.cloud.push();
 }
+// Neu zeichnen und Erinnerungen prüfen; commit speichert vorher. / 다시 그리고 알림 확인. commit은 그 전에 저장.
+const refresh = () => { render(); checkExpiry(); };
+const commit = () => { save(); refresh(); };
+// Eintrag einer Liste nach id; take nimmt ihn zugleich heraus. / 목록에서 id로 항목 찾기. take는 찾아서 빼기까지.
+const byId = (kind, id) => S[kind].find(x => x.id === id);
+const take = (kind, id) => { const x = byId(kind, id); if (x) S[kind] = S[kind].filter(y => y !== x); return x; };
+const byOrder = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 
 const t = () => T[S.lang];
 const storeName = s => s.key ? t()[s.key] : tr(s.name);
@@ -477,17 +481,14 @@ function render() {
   if (S.active !== 'stock' && !S.stores.some(s => s.id === S.active)) S.active = S.stores[0] ? S.stores[0].id : 'stock';
   const due = S.stock.filter(soon).length;
 
-  let h = `<div class="top"><header><div><p class="date">${new Date().toLocaleDateString(S.lang === 'ko' ? 'ko-KR' : 'de-DE', { month: 'long', day: 'numeric', weekday: 'long' })}</p><h1>${ic('cart')}${L.title}</h1></div><div class="lang">
-    <button data-act="lang" data-v="ko" class="${S.lang === 'ko' ? 'on' : ''}">한국어</button>
-    <button data-act="lang" data-v="de" class="${S.lang === 'de' ? 'on' : ''}">Deutsch</button></div></header>`;
+  let h = `<div class="top"><header><div><p class="date">${new Date().toLocaleDateString(S.lang === 'ko' ? 'ko-KR' : 'de-DE', { month: 'long', day: 'numeric', weekday: 'long' })}</p><h1>${ic('cart')}${L.title}</h1></div><div class="lang">${
+    [['ko', '한국어'], ['de', 'Deutsch']].map(([l, name]) => `<button data-act="lang" data-v="${l}" class="${S.lang === l ? 'on' : ''}">${name}</button>`).join('')
+  }</div></header>`;
 
-  h += '<nav class="tabs">';
-  h += `<button class="tab ${S.active === 'stock' ? 'on' : ''}" data-act="tab" data-v="stock">${L.stock}${S.stock.length ? `<span class="n">${S.stock.length}</span>` : ''}</button>`;
-  for (const s of S.stores) {
-    const n = S.items.filter(i => i.store === s.id).length;
-    h += `<button class="tab ${S.active === s.id ? 'on' : ''}" data-act="tab" data-v="${s.id}">${esc(storeName(s))}${n ? `<span class="n">${n}</span>` : ''}</button>`;
-  }
-  h += `<button class="tab" data-act="addStore">${L.addStore}</button></nav></div><div class="sheet">`;
+  const tab = (id, label, n) => `<button class="tab ${S.active === id ? 'on' : ''}" data-act="tab" data-v="${id}">${label}${n ? `<span class="n">${n}</span>` : ''}</button>`;
+  h += '<nav class="tabs">' + tab('stock', L.stock, S.stock.length)
+    + S.stores.map(s => tab(s.id, esc(storeName(s)), S.items.filter(i => i.store === s.id).length)).join('')
+    + `<button class="tab" data-act="addStore">${L.addStore}</button></nav></div><div class="sheet">`;
 
   if (due && S.active !== 'stock') h += `<button class="banner" data-act="tab" data-v="stock">${ic('clock')}${L.banner(due)}</button>`;
 
@@ -605,10 +606,10 @@ toastEl.addEventListener('click', e => {
     const drop = (u.drop && u.drop[k]) || [];
     S[k] = S[k].filter(x => !drop.includes(x.id));
     for (const x of u[k] || []) if (!S[k].some(y => y.id === x.id)) S[k].splice(k === 'stores' ? u.at : S[k].length, 0, x);
-    if (k !== 'stores') S[k].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    if (k !== 'stores') S[k].sort(byOrder);
   }
   if (u.active) S.active = u.active;
-  save(); render(); checkExpiry();
+  commit();
 });
 
 // Konto und geteilte Liste; ohne Firebase-Konfiguration bleibt die App rein lokal.
@@ -658,9 +659,9 @@ function renderStock(L, due) {
 // Notiz und Übersetzung eines Artikels bearbeiten; das zweite Feld zeigt die Übersetzung in die andere Sprache.
 // 메모와 번역 고치기. 둘째 칸은 다른 언어로 된 번역.
 function editForm(x, L) {
-  const n = clean(x.name), to = srcLang(n) === 'ko' ? 'de' : 'ko', t = tr(n, to);
+  const { to, tx } = txOf(x.name);
   return `<form class="move" data-act="note" data-v="${x.id}"><input name="note_${x.id}" value="${esc(x.note || '')}" placeholder="${L.notePh}" maxlength="60" autocomplete="off" enterkeyhint="done">
-    <input name="tx_${x.id}" value="${esc(t !== n ? t : '')}" placeholder="${L.txPh[to]}" maxlength="60" autocomplete="off" enterkeyhint="done"><button class="chip">${L.noteOk}</button></form>`;
+    <input name="tx_${x.id}" value="${esc(tx)}" placeholder="${L.txPh[to]}" maxlength="60" autocomplete="off" enterkeyhint="done"><button class="chip">${L.noteOk}</button></form>`;
 }
 
 function stockItem(x, L) {
@@ -721,7 +722,7 @@ const actions = {
   moveOpen(v) { moveId = moveId === v ? null : v; noteId = null; },
   noteOpen(v) { noteId = noteId === v ? null : v; moveId = null; },
   move(v) {
-    const [id, store] = v.split(':'), i = S.items.find(i => i.id === id);
+    const [id, store] = v.split(':'), i = byId('items', id);
     if (i) i.store = store;
     moveId = null;
   },
@@ -741,10 +742,32 @@ const actions = {
     S.items = S.items.filter(i => i.store !== s.id);
   },
   del(v) {
-    const i = S.items.find(i => i.id === v);
+    const i = take('items', v);
+    if (i) toast(t().removed, { items: [i] });
+  },
+  // Neuer Artikel aus dem Eingabefeld / 입력 칸에서 새 항목
+  add(v, form) {
+    const input = form.elements.name, name = input.value.trim();
+    if (!name) return false;
+    addItem(name);
+    input.value = '';
+  },
+  // Notiz und Übersetzung eines Artikels speichern / 항목의 메모와 번역 저장
+  note(v, form) {
+    const i = byId('items', v), note = form.elements['note_' + v].value.trim();
+    noteId = null;
     if (!i) return;
-    S.items = S.items.filter(x => x !== i);
-    toast(t().removed, { items: [i] });
+    if (note) i.note = note; else delete i.note;
+    // Geänderte Übersetzung merken; ein geleertes Feld holt die automatische zurück.
+    // 고친 번역을 기억. 칸을 비우면 자동 번역으로 돌아감.
+    const { n, tx: was } = txOf(i.name), tx = clean(form.elements['tx_' + v].value);
+    if (tx === was) return;
+    const key = memoId(n), m = byId('memo', key);
+    take('fix', fixId(n));
+    if (tx) S.fix.push({ id: fixId(n), to: tx });
+    // "Lag im Vorrat" hängt am deutschen Namen: mit der neuen Übersetzung mitnehmen.
+    // '실온에 뒀음' 기억은 독일어 이름에 붙어 있어서, 번역이 바뀌면 같이 옮김.
+    if (m && memoId(n) !== key) { S.memo = S.memo.filter(x => x !== m && x.id !== memoId(n)); S.memo.push({ ...m, id: memoId(n) }); }
   },
   sugg(v) {
     addItem(v);
@@ -754,7 +777,7 @@ const actions = {
   // Einen Teil abtrennen (z. B. die Hälfte einfrieren): eine Kopie, die neu eingeräumt wird.
   // 일부를 따로 떼기(예: 절반은 냉동). 복사본이 '정리 전'으로 감.
   split(v) {
-    const x = S.stock.find(x => x.id === v);
+    const x = byId('stock', v);
     if (!x) return;
     const y = { ...x, id: uid(), loc: null };
     if (!y.manual && y.days) y.expires = addDays(y.bought, shelfDays(y));
@@ -763,38 +786,35 @@ const actions = {
     toast(t().splitMsg, { drop: { stock: [y.id] } });
   },
   buy(v) {
-    const i = S.items.find(i => i.id === v);
+    const i = take('items', v);
     if (!i) return;
-    S.items = S.items.filter(x => x !== i);
     const bought = iso(new Date()), days = guessDays(i.name) || guessDays(tr(i.name, 'de')) || guessDays(tr(i.name, 'ko'));
     // Lag es zuletzt im Vorrat? Dann gleich wieder dorthin. / 지난번에 실온에 뒀으면 바로 실온으로.
-    const m = S.memo.find(m => m.id === memoId(i.name));
+    const m = byId('memo', memoId(i.name));
     const x = { id: i.id, name: i.name, ...(i.note && { note: i.note }), store: i.store, loc: m && m.loc === 'pantry' ? 'pantry' : null, bought, days, expires: null };
     if (days) x.expires = addDays(bought, shelfDays(x));
     S.stock.push(x);
-    const old = S.hist.find(h => h.id === histId(i.name));
-    S.hist = S.hist.filter(h => h !== old);
-    S.hist.push({ id: histId(i.name), name: clean(i.name), n: ((old && old.n) || 0) + 1, store: i.store });
-    toast(t().boughtMsg, { items: [i], hist: old ? [old] : [], drop: { stock: [x.id], hist: [histId(i.name)] } });
+    const hid = histId(i.name), old = take('hist', hid);
+    S.hist.push({ id: hid, name: clean(i.name), n: ((old && old.n) || 0) + 1, store: i.store });
+    toast(t().boughtMsg, { items: [i], hist: old ? [old] : [], drop: { stock: [x.id], hist: [hid] } });
   },
   // Lagerort wählen; ein selbst eingetragenes Datum bleibt, ein geschätztes wird neu berechnet.
   // 보관 장소 선택. 직접 입력한 날짜는 그대로 두고, 자동 계산한 날짜만 다시 계산.
   loc(v) {
-    const [id, loc] = v.split(':');
-    const x = S.stock.find(x => x.id === id);
+    const [id, loc] = v.split(':'), x = byId('stock', id);
     if (!x) return;
     x.loc = loc;
     // Nur "Vorrat" wird gemerkt; Kühlschrank und Gefrierfach wählt man jedes Mal neu.
     // 실온만 기억. 냉장고·냉동고는 매번 직접 고름.
     const key = memoId(x.name);
-    S.memo = S.memo.filter(m => m.id !== key);
+    take('memo', key);
     if (loc === 'pantry') S.memo.push({ id: key, loc });
-    if (!x.manual && x.days) { x.expires = addDays(x.bought, shelfDays(x)); }
+    if (!x.manual && x.days) x.expires = addDays(x.bought, shelfDays(x));
   },
   // Notiz speichern, ohne neu zu zeichnen: sonst ginge das Antippen eines Knopfs direkt nach dem Schreiben verloren.
   // 메모는 화면을 다시 그리지 않고 저장. 다시 그리면 쓰자마자 누른 버튼이 안 눌림.
   memo(v, el) {
-    const x = S.stock.find(x => x.id === v), note = el.value.trim();
+    const x = byId('stock', v), note = el.value.trim();
     if (!x || note === (x.note || '')) return false;
     if (note) x.note = note; else delete x.note;
     save();
@@ -804,11 +824,11 @@ const actions = {
     return false;
   },
   exp(v, el) {
-    const x = S.stock.find(x => x.id === v);
+    const x = byId('stock', v);
     if (x) { x.expires = el.value || null; x.manual = true; }
   },
   again(v) {
-    const x = S.stock.find(x => x.id === v);
+    const x = byId('stock', v);
     if (!x) return;
     const store = S.stores.some(s => s.id === x.store) ? x.store : (S.stores[0] || {}).id;
     if (!store) return false; // keine Liste mehr da: nichts wegwerfen / 목록이 하나도 없으면 그대로 둠
@@ -818,16 +838,14 @@ const actions = {
       S.items.push(i);
       back.drop.items.push(i.id);
     }
-    S.stock = S.stock.filter(y => y !== x);
+    take('stock', v);
     toast(t().againMsg, back);
   },
   used(v) {
-    const x = S.stock.find(x => x.id === v);
-    if (!x) return;
-    S.stock = S.stock.filter(y => y !== x);
-    toast(t().usedMsg, { stock: [x] });
+    const x = take('stock', v);
+    if (x) toast(t().usedMsg, { stock: [x] });
   },
-  notif() { Notification.requestPermission().then(() => { render(); checkExpiry(); }); return false; },
+  notif() { Notification.requestPermission().then(refresh); return false; },
   signin() { cloud.signIn().catch(cloudErr); return false; },
   signout() { cloud.signOut().catch(cloudErr); return false; },
   houseNew() { cloud.create().catch(cloudErr); return false; },
@@ -846,8 +864,9 @@ const cloudErr = e => alert(t().cloudErr + '\n' + (e && (e.code || e.message) ||
 function run(act, v, el) {
   if (!actions[act]) return;
   if (actions[act](v, el) === false) return;
-  save(); render(); checkExpiry();
+  commit();
   if (act === 'noteOpen' && noteId) app.querySelector('form[data-act=note] input').focus();
+  if (act === 'add') app.querySelector('.add input').focus();
 }
 // iPhone-Safari beachtet user-scalable=no nicht; dort das Zwei-Finger-Vergrößern eigens abfangen.
 // 아이폰 사파리는 user-scalable=no를 무시해서, 두 손가락 확대를 따로 막음.
@@ -879,32 +898,7 @@ app.addEventListener('change', e => {
 });
 app.addEventListener('submit', e => {
   e.preventDefault();
-  if (e.target.dataset.act === 'note') {
-    const id = e.target.dataset.v, i = S.items.find(i => i.id === id), note = e.target.elements['note_' + id].value.trim();
-    if (i && note) i.note = note; else if (i) delete i.note;
-    if (i) {
-      // Geänderte Übersetzung merken; ein geleertes Feld holt die automatische zurück.
-      // 고친 번역을 기억. 칸을 비우면 자동 번역으로 돌아감.
-      const n = clean(i.name), to = srcLang(n) === 'ko' ? 'de' : 'ko', was = tr(n, to), t = clean(e.target.elements['tx_' + id].value);
-      if (t !== (was !== n ? was : '')) {
-        const key = memoId(n), m = S.memo.find(m => m.id === key);
-        S.fix = S.fix.filter(f => f.id !== fixId(n));
-        if (t) S.fix.push({ id: fixId(n), to: t });
-        // "Lag im Vorrat" hängt am deutschen Namen: mit der neuen Übersetzung mitnehmen.
-        // '실온에 뒀음' 기억은 독일어 이름에 붙어 있어서, 번역이 바뀌면 같이 옮김.
-        if (m && memoId(n) !== key) { S.memo = S.memo.filter(x => x !== m && x.id !== memoId(n)); S.memo.push({ ...m, id: memoId(n) }); }
-      }
-    }
-    noteId = null;
-    save(); render();
-    return;
-  }
-  const name = e.target.elements.name.value.trim();
-  if (!name) return;
-  addItem(name);
-  e.target.elements.name.value = '';
-  save(); render();
-  app.querySelector('.add input').focus();
+  run(e.target.dataset.act, e.target.dataset.v, e.target);
 });
 
 // ---------- Erinnerungen / 알림 ----------
@@ -931,10 +925,9 @@ function checkExpiry() {
   if (changed) keep();
 }
 
-render();
-checkExpiry();
-setInterval(() => { render(); checkExpiry(); }, 60 * 60 * 1000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { render(); checkExpiry(); } });
+refresh();
+setInterval(refresh, 60 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
 // Offline-Helfer + neue Version sofort: sw.js nie aus dem Browser-Cache, beim Zurückkehren nach Updates schauen,
 // und einmal neu laden, wenn eine neue Version übernimmt.
 // 오프라인 기능 + 새 버전 바로 적용: sw.js 는 저장본을 쓰지 않음, 앱으로 돌아올 때 새 버전 확인, 새 버전이 자리 잡으면 한 번 새로 고침.
@@ -969,7 +962,8 @@ if (cfg) {
   const KINDS = ['stores', 'items', 'stock', 'memo', 'fix', 'hist'], FIRST = ['super', 'asia', 'online'];
   const sig = o => JSON.stringify(o, Object.keys(o).sort());
   const rank = s => (FIRST.indexOf(s.id) + 1) || 9;
-  const house = () => F.doc(db, 'households', S.house);
+  const house = (code = S.house) => F.doc(db, 'households', code);
+  const warn = e => console.warn('sync', e);
   let unsub = null, first = true;
 
   // Unterschied zwischen dem zuletzt gesehenen Serverstand (S.remote) und dem Gerät, als Feld-Updates.
@@ -983,11 +977,13 @@ if (cfg) {
     }
     return out;
   }
-  function push() {
-    if (!unsub || first || !S.house) return;
-    const c = changes();
-    if (Object.keys(c).length) F.updateDoc(house(), c).catch(e => console.warn('sync', e));
+  // Schickt die Unterschiede hoch und meldet, ob es welche gab. / 차이를 올리고, 올린 것이 있었는지 알려 줌.
+  function send() {
+    const c = changes(), any = Object.keys(c).length > 0;
+    if (any) F.updateDoc(house(), c).catch(warn);
+    return any;
   }
+  function push() { if (unsub && !first && S.house) send(); }
   function listen() {
     stop(); first = true;
     unsub = F.onSnapshot(house(), snap => {
@@ -996,21 +992,21 @@ if (cfg) {
         // Erst hochladen, was auf diesem Gerät seit dem letzten Abgleich dazukam; die Antwort enthält es dann.
         // 마지막 동기화 뒤 이 기기에서 바뀐 것을 먼저 올림. 다음 응답에 그 내용이 포함됨.
         first = false;
-        const c = changes();
-        if (Object.keys(c).length) { F.updateDoc(house(), c).catch(e => console.warn('sync', e)); return; }
+        if (send()) return;
       }
       const d = snap.data();
       S.remote = JSON.parse(JSON.stringify(Object.fromEntries(KINDS.map(k => [k, d[k] || {}]))));
-      const list = k => Object.values(JSON.parse(JSON.stringify(S.remote[k]))).sort((a, b) => a.id < b.id ? -1 : 1);
-      S.stores = list('stores').sort((a, b) => rank(a) - rank(b));
-      S.items = list('items'); S.stock = list('stock'); S.memo = list('memo'); S.fix = list('fix'); S.hist = list('hist');
+      for (const k of KINDS) S[k] = Object.values(JSON.parse(JSON.stringify(S.remote[k]))).sort(byOrder);
+      S.stores.sort((a, b) => rank(a) - rank(b));
       keep();
-      render(); checkExpiry();
-    }, e => console.warn('sync', e));
+      refresh();
+    }, warn);
   }
   function stop() { if (unsub) unsub(); unsub = null; }
+  // Dieses Gerät gehört jetzt zu diesem Haushalt. / 이 기기를 이 집 목록에 연결.
+  const bind = code => { S.house = code; S.remote = null; save(); };
   async function link(code) {
-    S.house = code; S.remote = null; save();
+    bind(code);
     await F.setDoc(F.doc(db, 'users', auth.currentUser.uid), { house: code });
     listen(); render();
   }
@@ -1022,12 +1018,12 @@ if (cfg) {
     async create() {
       const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       const code = [...crypto.getRandomValues(new Uint8Array(10))].map(n => abc[n % abc.length]).join('');
-      await F.setDoc(F.doc(db, 'households', code), { stores: {}, items: {}, stock: {}, created: Date.now() });
+      await F.setDoc(house(code), { stores: {}, items: {}, stock: {}, created: Date.now() });
       await link(code);
     },
     async join(code) {
       code = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      if (!code || !(await F.getDoc(F.doc(db, 'households', code))).exists()) return false;
+      if (!code || !(await F.getDoc(house(code))).exists()) return false;
       await link(code);
       return true;
     },
@@ -1039,8 +1035,8 @@ if (cfg) {
     else {
       if (!S.house) try {
         const u = await F.getDoc(F.doc(db, 'users', user.uid));
-        if (u.exists() && u.data().house) { S.house = u.data().house; S.remote = null; save(); }
-      } catch (e) { console.warn('sync', e); }
+        if (u.exists() && u.data().house) bind(u.data().house);
+      } catch (e) { warn(e); }
       if (S.house && !unsub) listen();
     }
     cloud.ready = true;
