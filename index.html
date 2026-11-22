@@ -67,8 +67,8 @@ h1 { margin: 0; font-size: clamp(23px, 7.4vw, 28px); font-weight: 800; line-heig
 }
 
 /* Alle Textfelder: graue Fläche, beim Schreiben ein grüner Rand / 글 쓰는 칸은 모두 회색 바탕, 쓰는 동안 초록 테두리 */
-:is(.add, .search, .move, .fld) input { min-width: 0; outline: 0; background: var(--field); border: 1.5px solid transparent; }
-:is(.add, .search, .move, .fld) input:focus { border-color: var(--check); }
+:is(.add, .search, .move, .fld, #ask) input { min-width: 0; outline: 0; background: var(--field); border: 1.5px solid transparent; }
+:is(.add, .search, .move, .fld, #ask) input:focus { border-color: var(--check); }
 
 /* Eingabe und Suche / 입력과 검색 */
 .add { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -121,6 +121,7 @@ li.done .name, li.done .alt { color: var(--muted); font-weight: 400; text-decora
 li.done .note { opacity: .6; }
 .opt { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; color: var(--ink); cursor: pointer; }
 .opt small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.cloud .move { padding: 0; margin-bottom: 14px; }
 
 /* Gezeichnete Symbole / 선으로 그린 아이콘 */
 .ic {
@@ -183,6 +184,15 @@ h2 .n { font-weight: 600; opacity: .85; }
   display: flex; align-items: center; gap: 16px; padding: 12px 18px; border-radius: 14px;
   background: var(--ink); color: var(--sheet); font-size: 15px; box-shadow: 0 6px 20px rgba(10, 30, 20, .28);
 }
+/* Eigenes Fenster für Rückfragen statt des Browser-Fensters / 브라우저 기본 창 대신 앱 안에서 묻는 창 */
+#ask { width: min(340px, calc(100% - 40px)); padding: 0; border: 0; border-radius: 20px; background: var(--sheet); color: var(--ink); box-shadow: 0 10px 40px rgba(10, 30, 20, .3); }
+#ask::backdrop { background: rgba(10, 30, 20, .45); }
+#ask form { padding: 20px; }
+#ask p { margin: 0 0 14px; font-weight: 600; }
+#ask input { width: 100%; padding: 11px 13px; font-size: 17px; border-radius: 12px; }
+#ask .foot { justify-content: flex-end; }
+.btn.bad { background: var(--bad-bg); color: var(--bad); }
+
 #toast button { color: inherit; font-weight: 700; white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
 
 /* Konto und Verwaltung, ganz unten und leise / 계정과 관리, 맨 아래에 조용히 */
@@ -210,7 +220,8 @@ const app = document.getElementById('app');
 const T = {
   ko: {
     title: '장보기', super: '슈퍼마켓', asia: '아시아 마켓', online: '인터넷',
-    stock: '구입한 것', addStore: '＋ 목록', addPh: '살 것 추가… (한국어/독일어)', add: '추가',
+    stock: '구입한 것', addStore: '＋ 목록', addPh: '살 것 추가… (한국어/독일어)', addPhPlain: '적을 것 추가… (예: 레고, 포장지)', add: '추가',
+    ok: '확인', cancel: '취소', del: '삭제', listName: '목록 이름',
     emptyList: '목록이 비어 있어요.', emptyStock: '아직 구입한 물건이 없어요.\n목록에서 체크하면 여기로 옮겨져요.',
     newStore: '새 장보기 목록 이름 (예: 드럭스토어)', manage: '목록 관리', delStore: n => `"${n}" 목록 삭제`,
     delStoreQ: n => `"${n}" 목록과 그 안의 항목을 모두 삭제할까요?`,
@@ -237,7 +248,8 @@ const T = {
   },
   de: {
     title: 'Einkaufsliste', super: 'Supermarkt', asia: 'Asia-Markt', online: 'Internet',
-    stock: 'Gekauft', addStore: '＋ Liste', addPh: 'Artikel hinzufügen… (Deutsch/Koreanisch)', add: 'Hinzufügen',
+    stock: 'Gekauft', addStore: '＋ Liste', addPh: 'Artikel hinzufügen… (Deutsch/Koreanisch)', addPhPlain: 'Hinzufügen… (z. B. Lego, Geschenkpapier)', add: 'Hinzufügen',
+    ok: 'OK', cancel: 'Abbrechen', del: 'Löschen', listName: 'Name der Liste',
     emptyList: 'Die Liste ist leer.', emptyStock: 'Noch nichts gekauft.\nAbgehakte Artikel landen hier.',
     newStore: 'Name der neuen Einkaufsliste (z. B. Drogerie)', manage: 'Liste verwalten', delStore: n => `Liste „${n}“ löschen`,
     delStoreQ: n => `Liste „${n}“ mit allen Artikeln löschen?`,
@@ -508,10 +520,10 @@ function render() {
     // 음식이 아닌 목록(plain): 체크한 것은 구입한 것으로 가지 않고, 줄이 그어진 채 아래에 남음.
     const all = S.items.filter(i => i.store === S.active), done = plain ? all.filter(i => i.done) : [];
     const items = [...all.filter(i => !done.includes(i)), ...done];
-    h += `<form class="add" data-act="add"><input name="name" placeholder="${L.addPh}" autocomplete="off" enterkeyhint="done"><button>${L.add}</button></form>`;
+    h += `<form class="add" data-act="add"><input name="name" placeholder="${plain ? L.addPhPlain : L.addPh}" autocomplete="off" enterkeyhint="done"><button>${L.add}</button></form>`;
     if (!plain) h += suggHtml(L);
     h += items.length
-      ? '<ul>' + items.map(i => `<li class="${done.includes(i) ? 'done' : ''}"><input type="checkbox" data-act="buy" data-v="${i.id}" aria-label="${esc(tr(i.name))}" ${done.includes(i) ? 'checked' : ''}>
+      ? '<ul>' + items.map(i => `<li class="${done.includes(i) ? 'done' : ''}"><input type="checkbox" data-act="buy" data-v="${i.id}" aria-label="${esc(tr(i.name))}" ${(i.id in wants ? wants[i.id] : done.includes(i)) ? 'checked' : ''}>
           <button class="pick name" data-act="noteOpen" data-v="${i.id}" title="${L.note}">${nameHtml(i.name)}${noteHtml(i)}</button>
           ${S.stores.length > 1 ? `<button class="x" data-act="moveOpen" data-v="${i.id}" title="${L.move}" aria-label="${L.move}">⇄</button>` : ''}
           <button class="x" data-act="del" data-v="${i.id}" aria-label="×">×</button>
@@ -525,6 +537,7 @@ function render() {
   // Liste löschen liegt ganz unten hinter einem Aufklapper, damit man es nicht versehentlich trifft.
   // 목록 삭제는 실수로 누르지 않게 맨 아래 접힌 칸 안에.
   if (cur) h += `<details class="shared" ${manageOpen ? 'open' : ''}><summary>${ic('gear')}${L.manage}</summary><div class="cloud">
+    <form class="move" data-act="rename"><input name="listName_${cur.id}" value="${esc(storeName(cur))}" aria-label="${L.listName}" placeholder="${L.listName}" maxlength="40" autocomplete="off" enterkeyhint="done"><button class="chip">${L.noteOk}</button></form>
     <label class="opt"><input type="checkbox" data-act="plain" ${plain ? 'checked' : ''}><span>${L.plain}<small>${L.plainHint}</small></span></label>
     <button class="link" data-act="delStore">${L.delStore(esc(storeName(cur)))}</button></div></details>`;
   // Getippten Text und Fokus über das Neuzeichnen retten / 다시 그려도 입력 중인 글자와 포커스 유지
@@ -624,6 +637,28 @@ toastEl.addEventListener('click', e => {
   }
   if (u.active) S.active = u.active;
   commit();
+});
+
+// ---------- Rückfrage im eigenen Fenster / 앱 안에서 묻는 창 ----------
+// ask(Frage, { ph: Platzhalter → mit Eingabefeld, ok: Knopftext, danger }) liefert den eingegebenen Text
+// (ohne Feld: true) oder null bei Abbruch. / 입력 칸이 있으면 입력한 글, 없으면 true, 취소하면 null.
+const askEl = document.body.appendChild(Object.assign(document.createElement('dialog'), { id: 'ask' }));
+let askDone = null, askYes = false;
+function ask(q, { ph, ok, danger } = {}) {
+  const L = t();
+  askEl.innerHTML = `<form method="dialog"><p>${esc(q)}</p>${ph === undefined ? '' : `<input name="v" placeholder="${esc(ph)}" maxlength="40" autocomplete="off" enterkeyhint="done">`}
+    <div class="foot"><button type="button" class="btn ghost" data-no>${L.cancel}</button><button class="btn ${danger ? 'bad' : ''}">${ok || L.ok}</button></div></form>`;
+  askYes = false;
+  askEl.showModal();
+  return new Promise(done => { askDone = done; });
+}
+askEl.addEventListener('submit', () => { askYes = true; });
+// Abbrechen: Knopf oder Tippen neben das Fenster / 취소: 버튼을 누르거나 창 바깥을 누름
+askEl.addEventListener('click', e => { if (e.target === askEl || e.target.closest('[data-no]')) askEl.close(); });
+askEl.addEventListener('close', () => {
+  const input = askEl.querySelector('input'), done = askDone;
+  askDone = null;
+  if (done) done(!askYes ? null : input ? clean(input.value) : true);
 });
 
 // Konto und geteilte Liste; ohne Firebase-Konfiguration bleibt die App rein lokal.
@@ -744,17 +779,29 @@ const actions = {
   lang(v) { S.lang = v; },
   tab(v) { S.active = v; manageOpen = false; },
   addStore() {
-    const name = (prompt(t().newStore) || '').trim();
-    if (!name) return;
-    const s = { id: uid(), name };
-    S.stores.push(s); S.active = s.id;
-    manageOpen = true; // gleich fragen, ob es eine Liste ohne Lebensmittel ist / 음식이 아닌 목록인지 바로 고를 수 있게
+    ask(t().newStore, { ph: '', ok: t().add }).then(name => {
+      if (!name) return;
+      const s = { id: uid(), name };
+      S.stores.push(s); S.active = s.id;
+      manageOpen = true; // gleich fragen, ob es eine Liste ohne Lebensmittel ist / 음식이 아닌 목록인지 바로 고를 수 있게
+      commit();
+    });
+    return false;
+  },
+  // Liste umbenennen; die drei Anfangslisten verlieren damit ihren festen, übersetzten Namen.
+  // 목록 이름 바꾸기. 처음부터 있던 세 목록은 정해진 번역 이름 대신 이 이름을 씀.
+  rename(v, form) {
+    const s = byId('stores', S.active), name = clean(form.elements[0].value);
+    if (!s || !name || name === storeName(s)) return false;
+    delete s.key; s.name = name;
+    manageOpen = true;
   },
   // Liste mit oder ohne Lebensmittel / 음식 목록인지 아닌지
   plain(v, el) {
     const s = byId('stores', S.active);
     if (!s) return;
-    if (el.checked) s.plain = true; else delete s.plain;
+    if (el.checked) s.plain = true;
+    else { delete s.plain; for (const i of S.items) if (i.store === s.id) delete i.done; }
     manageOpen = true;
   },
   clearDone() {
@@ -763,11 +810,15 @@ const actions = {
     toast(t().doneGone, { items: gone });
   },
   delStore() {
-    const s = S.stores.find(s => s.id === S.active);
-    if (!s || !confirm(t().delStoreQ(storeName(s)))) return;
-    toast(t().listGone, { stores: [s], at: S.stores.indexOf(s), items: S.items.filter(i => i.store === s.id), active: s.id });
-    S.stores = S.stores.filter(x => x !== s);
-    S.items = S.items.filter(i => i.store !== s.id);
+    const s = byId('stores', S.active);
+    if (s) ask(t().delStoreQ(storeName(s)), { ok: t().del, danger: true }).then(yes => {
+      if (!yes || !S.stores.includes(s)) return;
+      toast(t().listGone, { stores: [s], at: S.stores.indexOf(s), items: S.items.filter(i => i.store === s.id), active: s.id });
+      S.stores = S.stores.filter(x => x !== s);
+      S.items = S.items.filter(i => i.store !== s.id);
+      commit();
+    });
+    return false;
   },
   del(v) {
     const i = take('items', v);
@@ -881,8 +932,9 @@ const actions = {
   signout() { cloud.signOut().catch(cloudErr); return false; },
   houseNew() { cloud.create().catch(cloudErr); return false; },
   houseJoin() {
-    const code = (prompt(t().joinPrompt) || '').trim();
-    if (code) cloud.join(code).then(ok => { if (!ok) alert(t().badCode); }).catch(cloudErr);
+    ask(t().joinPrompt, { ph: '' }).then(code => {
+      if (code) cloud.join(code).then(ok => { if (!ok) alert(t().badCode); }).catch(cloudErr);
+    });
     return false;
   },
   copyCode(v, el) {
@@ -920,11 +972,22 @@ app.addEventListener('click', e => {
 // Die Notiz speichert sich beim Verlassen des Felds; die Eingabetaste verlässt es. / 메모는 칸을 벗어나면 저장. 엔터를 누르면 칸을 벗어남.
 app.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[data-act=memo]')) e.target.blur(); });
 app.addEventListener('focusout', e => { if (e.target.matches('input[data-act=memo]')) run('memo', e.target.dataset.v, e.target); });
+const wants = {}; // zuletzt gewählter Haken je Artikel, bis er ausgeführt ist / 항목마다 마지막으로 누른 체크 상태 (실행 전까지)
 app.addEventListener('change', e => {
   const el = e.target.closest('input[data-act]:not([data-act=memo])');
   if (!el) return;
-  // Kurz abgehakt zeigen, dann nach "Gekauft" verschieben / 체크 표시를 잠깐 보여 준 뒤 이동
-  if (el.dataset.act === 'buy') setTimeout(() => run('buy', el.dataset.v, el), 220);
+  // Kurz abgehakt zeigen, dann erst ausführen – und nur, wenn der Haken dann noch anders steht als der Artikel
+  // (wer gleich wieder abwählt, kauft nichts). / 체크 표시를 잠깐 보여 준 뒤 실행. 그때도 체크 상태가 항목과
+  // 다를 때만 실행 (바로 다시 풀면 아무 일도 없음).
+  if (el.dataset.act === 'buy') {
+    const id = el.dataset.v;
+    wants[id] = el.checked;
+    setTimeout(() => {
+      const want = wants[id];
+      delete wants[id];
+      if (want !== undefined && want !== !!(byId('items', id) || {}).done) run('buy', id, el);
+    }, 220);
+  }
   else run(el.dataset.act, el.dataset.v, el);
 });
 app.addEventListener('submit', e => {
@@ -1035,7 +1098,12 @@ if (cfg) {
   }
   function stop() { if (unsub) unsub(); unsub = null; }
   // Dieses Gerät gehört jetzt zu diesem Haushalt. / 이 기기를 이 집 목록에 연결.
-  const bind = code => { S.house = code; S.remote = null; save(); };
+  // Nach dem Abmelden bleibt der zuletzt gesehene Stand (S.remote) samt Haushalt (S.was) liegen. Wer sich wieder
+  // mit demselben Haushalt verbindet, lädt so nur hoch, was er selbst inzwischen geändert hat – und holt nicht
+  // zurück, was die anderen gelöscht oder geändert haben.
+  // 로그아웃해도 마지막으로 본 상태(S.remote)와 그 집(S.was)을 남겨 둠. 같은 집에 다시 연결하면 그사이 내가
+  // 바꾼 것만 올라가고, 가족이 지우거나 고친 것을 예전 내용으로 되돌리지 않음.
+  const bind = code => { if (S.was !== code) S.remote = null; delete S.was; S.house = code; save(); };
   async function link(code) {
     bind(code);
     await F.setDoc(F.doc(db, 'users', auth.currentUser.uid), { house: code });
@@ -1045,7 +1113,7 @@ if (cfg) {
   window.cloud = {
     ready: false, user: null, push,
     signIn: () => A.signInWithPopup(auth, new A.GoogleAuthProvider()),
-    async signOut() { stop(); delete S.house; delete S.remote; save(); await A.signOut(auth); },
+    async signOut() { stop(); if (S.house) S.was = S.house; delete S.house; save(); await A.signOut(auth); },
     async create() {
       const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
       const code = [...crypto.getRandomValues(new Uint8Array(10))].map(n => abc[n % abc.length]).join('');
