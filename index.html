@@ -91,16 +91,16 @@ ul { list-style: none; margin: 0; padding: 0; }
 li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
 li:last-child { border-bottom: 0; }
 li.flash { background: var(--soft); border-radius: 12px; }
-li input[type=checkbox] {
+input[type=checkbox] {
   -webkit-appearance: none; appearance: none; flex: none; width: 26px; height: 26px; margin: 0; cursor: pointer;
   border: 2px solid var(--check); border-radius: 8px; background: none center / 16px no-repeat;
 }
-li input[type=checkbox]:checked {
+input[type=checkbox]:checked {
   background-color: var(--check);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 @media (prefers-color-scheme: dark) {
-  li input[type=checkbox]:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%230c2418' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  input[type=checkbox]:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8.5l3.2 3.2L13 4.8' fill='none' stroke='%230c2418' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
 }
 .pick { flex: 1; min-width: 0; min-height: 32px; text-align: left; }
 .name { overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; font-size: 18px; font-weight: 600; }
@@ -116,6 +116,11 @@ li input[type=checkbox]:checked {
 .empty { color: var(--muted); text-align: center; padding: 44px 12px; }
 .chip { padding: 6px 12px; border-radius: 999px; background: var(--soft); color: var(--ok); font-size: 15px; font-weight: 600; }
 .sp { flex: 1; }
+/* Erledigt in einer Liste ohne Lebensmittel: durchgestrichen, bleibt stehen / 음식이 아닌 목록에서 완료한 것: 줄 긋고 남김 */
+li.done .name, li.done .alt { color: var(--muted); font-weight: 400; text-decoration: line-through; }
+li.done .note { opacity: .6; }
+.opt { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; color: var(--ink); cursor: pointer; }
+.opt small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 1.4; }
 
 /* Gezeichnete Symbole / 선으로 그린 아이콘 */
 .ic {
@@ -219,6 +224,8 @@ const T = {
     split: '나누기', splitMsg: "둘로 나눴어요. 새 것은 '정리 전'에 있어요", sugg: '자주 사는 것', dup: '이미 목록에 있어요',
     undo: '되돌리기', removed: '지웠어요', boughtMsg: '구입한 것으로 옮겼어요', usedMsg: '다 쓴 것으로 지웠어요',
     againMsg: '살 것으로 옮겼어요', listGone: '목록을 지웠어요',
+    plain: '음식이 아닌 목록 (선물, 생활용품)', plainHint: '체크하면 줄만 그어지고 목록에 남아요. 구입한 것으로 가지 않아요.',
+    clearDone: n => `완료한 것 ${n}개 지우기`, doneGone: '완료한 것을 지웠어요',
     searchPh: '구입한 것 검색 (예: 두부, Milch)', noMatch: '찾는 물건이 없어요.', clear: '검색어 지우기',
     banner: n => `소비기한이 곧 끝나는 물건 ${n}개`,
     notifOn: '알림 켜기', notifOk: '알림 켜짐', notifNo: '알림이 차단되어 있어요 (브라우저 설정에서 허용)',
@@ -244,6 +251,8 @@ const T = {
     split: 'Teilen', splitMsg: 'Geteilt. Der neue Teil steht unter „Noch einräumen“', sugg: 'Oft gekauft', dup: 'Steht schon auf der Liste',
     undo: 'Rückgängig', removed: 'Gelöscht', boughtMsg: 'Nach „Gekauft“ verschoben', usedMsg: 'Als aufgebraucht entfernt',
     againMsg: 'Wieder auf die Liste gesetzt', listGone: 'Liste gelöscht',
+    plain: 'Keine Lebensmittel (Geschenke, Haushalt)', plainHint: 'Abgehaktes wird nur durchgestrichen und bleibt auf der Liste. Es landet nicht unter „Gekauft“.',
+    clearDone: n => n === 1 ? '1 erledigten Artikel löschen' : `${n} erledigte Artikel löschen`, doneGone: 'Erledigte gelöscht',
     searchPh: 'Gekauftes suchen (z. B. Milch, 두부)', noMatch: 'Nichts gefunden.', clear: 'Suche löschen',
     banner: n => n === 1 ? '1 Artikel läuft bald ab' : `${n} Artikel laufen bald ab`,
     notifOn: 'Benachrichtigungen einschalten', notifOk: 'Benachrichtigungen aktiv', notifNo: 'Benachrichtigungen sind blockiert (in den Browser-Einstellungen erlauben)',
@@ -487,18 +496,22 @@ function render() {
 
   const tab = (id, label, n) => `<button class="tab ${S.active === id ? 'on' : ''}" data-act="tab" data-v="${id}">${label}${n ? `<span class="n">${n}</span>` : ''}</button>`;
   h += '<nav class="tabs">' + tab('stock', L.stock, S.stock.length)
-    + S.stores.map(s => tab(s.id, esc(storeName(s)), S.items.filter(i => i.store === s.id).length)).join('')
+    + S.stores.map(s => tab(s.id, esc(storeName(s)), S.items.filter(i => i.store === s.id && !(s.plain && i.done)).length)).join('')
     + `<button class="tab" data-act="addStore">${L.addStore}</button></nav></div><div class="sheet">`;
 
   if (due && S.active !== 'stock') h += `<button class="banner" data-act="tab" data-v="stock">${ic('clock')}${L.banner(due)}</button>`;
 
+  const cur = byId('stores', S.active), plain = !!(cur && cur.plain);
   if (S.active === 'stock') h += renderStock(L, due);
   else {
-    const items = S.items.filter(i => i.store === S.active);
+    // Liste ohne Lebensmittel (plain): Abgehaktes bleibt durchgestrichen unten stehen, statt nach "Gekauft" zu gehen.
+    // 음식이 아닌 목록(plain): 체크한 것은 구입한 것으로 가지 않고, 줄이 그어진 채 아래에 남음.
+    const all = S.items.filter(i => i.store === S.active), done = plain ? all.filter(i => i.done) : [];
+    const items = [...all.filter(i => !done.includes(i)), ...done];
     h += `<form class="add" data-act="add"><input name="name" placeholder="${L.addPh}" autocomplete="off" enterkeyhint="done"><button>${L.add}</button></form>`;
-    h += suggHtml(L);
+    if (!plain) h += suggHtml(L);
     h += items.length
-      ? '<ul>' + items.map(i => `<li><input type="checkbox" data-act="buy" data-v="${i.id}" aria-label="${esc(tr(i.name))}">
+      ? '<ul>' + items.map(i => `<li class="${done.includes(i) ? 'done' : ''}"><input type="checkbox" data-act="buy" data-v="${i.id}" aria-label="${esc(tr(i.name))}" ${done.includes(i) ? 'checked' : ''}>
           <button class="pick name" data-act="noteOpen" data-v="${i.id}" title="${L.note}">${nameHtml(i.name)}${noteHtml(i)}</button>
           ${S.stores.length > 1 ? `<button class="x" data-act="moveOpen" data-v="${i.id}" title="${L.move}" aria-label="${L.move}">⇄</button>` : ''}
           <button class="x" data-act="del" data-v="${i.id}" aria-label="×">×</button>
@@ -506,12 +519,13 @@ function render() {
             `<button class="chip" data-act="move" data-v="${i.id}:${s.id}">${esc(storeName(s))}</button>`).join('')}</div>` : ''}
           ${noteId === i.id ? editForm(i, L) : ''}</li>`).join('') + '</ul>'
       : `<p class="empty">${L.emptyList}</p>`;
+    if (done.length) h += `<div class="foot"><button class="link" data-act="clearDone">${L.clearDone(done.length)}</button></div>`;
   }
   h += cloudHtml(L);
   // Liste löschen liegt ganz unten hinter einem Aufklapper, damit man es nicht versehentlich trifft.
   // 목록 삭제는 실수로 누르지 않게 맨 아래 접힌 칸 안에.
-  const cur = S.stores.find(s => s.id === S.active);
-  if (cur) h += `<details class="shared"><summary>${ic('gear')}${L.manage}</summary><div class="cloud">
+  if (cur) h += `<details class="shared" ${manageOpen ? 'open' : ''}><summary>${ic('gear')}${L.manage}</summary><div class="cloud">
+    <label class="opt"><input type="checkbox" data-act="plain" ${plain ? 'checked' : ''}><span>${L.plain}<small>${L.plainHint}</small></span></label>
     <button class="link" data-act="delStore">${L.delStore(esc(storeName(cur)))}</button></div></details>`;
   // Getippten Text und Fokus über das Neuzeichnen retten / 다시 그려도 입력 중인 글자와 포커스 유지
   h += '</div>';
@@ -580,7 +594,7 @@ function filterSugg() {
 let flashId = null;
 function addItem(name) {
   const dup = S.items.find(i => i.store === S.active && sameKey(i.name) === sameKey(name));
-  if (dup) { flashId = dup.id; toast(t().dup); return; }
+  if (dup) { flashId = dup.id; if (dup.done) delete dup.done; else toast(t().dup); return; }
   S.items.push({ id: uid(), store: S.active, name });
 }
 
@@ -716,6 +730,7 @@ function filterStock() {
 let openId = null; // aufgeklappter Artikel in "Gekauft" / 구입한 것에서 펼친 물건
 let noteId = null; // Artikel, dessen Notiz gerade bearbeitet wird / 메모를 고치는 중인 항목
 const noteHtml = x => x.note ? ` <span class="note">${esc(x.note)}</span>` : '';
+let manageOpen = false; // "Liste verwalten" aufgeklappt / '목록 관리'를 펼쳐 둠
 let moveId = null; // Artikel, für den gerade die Zielliste gewählt wird / 옮길 목록을 고르는 중인 항목
 const actions = {
   open(v) { openId = openId === v ? null : v; },
@@ -723,16 +738,29 @@ const actions = {
   noteOpen(v) { noteId = noteId === v ? null : v; moveId = null; },
   move(v) {
     const [id, store] = v.split(':'), i = byId('items', id);
-    if (i) i.store = store;
+    if (i) { i.store = store; delete i.done; }
     moveId = null;
   },
   lang(v) { S.lang = v; },
-  tab(v) { S.active = v; },
+  tab(v) { S.active = v; manageOpen = false; },
   addStore() {
     const name = (prompt(t().newStore) || '').trim();
     if (!name) return;
     const s = { id: uid(), name };
     S.stores.push(s); S.active = s.id;
+    manageOpen = true; // gleich fragen, ob es eine Liste ohne Lebensmittel ist / 음식이 아닌 목록인지 바로 고를 수 있게
+  },
+  // Liste mit oder ohne Lebensmittel / 음식 목록인지 아닌지
+  plain(v, el) {
+    const s = byId('stores', S.active);
+    if (!s) return;
+    if (el.checked) s.plain = true; else delete s.plain;
+    manageOpen = true;
+  },
+  clearDone() {
+    const gone = S.items.filter(i => i.store === S.active && i.done);
+    S.items = S.items.filter(i => !gone.includes(i));
+    toast(t().doneGone, { items: gone });
   },
   delStore() {
     const s = S.stores.find(s => s.id === S.active);
@@ -786,8 +814,11 @@ const actions = {
     toast(t().splitMsg, { drop: { stock: [y.id] } });
   },
   buy(v) {
-    const i = take('items', v);
+    const i = byId('items', v), s = i && byId('stores', i.store);
     if (!i) return;
+    // Liste ohne Lebensmittel: nur abhaken oder wieder öffnen / 음식이 아닌 목록: 체크하거나 다시 풀기만
+    if (s && s.plain) { if (i.done) delete i.done; else i.done = true; return; }
+    take('items', v);
     const bought = iso(new Date()), days = guessDays(i.name) || guessDays(tr(i.name, 'de')) || guessDays(tr(i.name, 'ko'));
     // Lag es zuletzt im Vorrat? Dann gleich wieder dorthin. / 지난번에 실온에 뒀으면 바로 실온으로.
     const m = byId('memo', memoId(i.name));
