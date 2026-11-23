@@ -144,6 +144,9 @@ h2 .n { font-weight: 600; opacity: .85; }
 .s-item { display: flow-root; padding: 0 4px; }
 .s-top { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 0; min-height: 46px; }
 .s-top .name { flex: 1; min-width: 0; }
+/* Noch nicht Eingeräumtes hat rechts ein × zum Löschen / 정리 전 물건은 오른쪽에 지우는 × */
+.s-row { display: flex; align-items: center; gap: 2px; }
+.s-row .s-top { flex: 1; min-width: 0; width: auto; }
 .chev { color: var(--muted); font-size: 12px; }
 .badge {
   flex: none; padding: 2px 9px; border-radius: 999px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums;
@@ -724,8 +727,10 @@ function stockItem(x, L) {
   // Eine Zeile pro Artikel; Antippen klappt die Bedienung auf. Noch nicht Eingeräumtes zeigt gleich die Lagerorte.
   // 물건마다 한 줄, 누르면 펼쳐짐. 정리 전 물건은 보관 장소 버튼을 바로 보여 줌.
   const open = x.id === openId, placed = LOCS.includes(x.loc);
-  return `<li class="s-item" data-find="${esc(findKey(x))}"><button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
-      <span class="name">${nameHtml(x.name)}${noteHtml(x)}</span>${badge}<span class="chev">${open ? '▴' : '▾'}</span></button>
+  const top = `<button class="s-top" data-act="open" data-v="${x.id}" aria-expanded="${open}">
+      <span class="name">${nameHtml(x.name)}${noteHtml(x)}</span>${badge}<span class="chev">${open ? '▴' : '▾'}</span></button>`;
+  return `<li class="s-item" data-find="${esc(findKey(x))}">${placed ? top
+      : `<div class="s-row">${top}<button class="x" data-act="drop" data-v="${x.id}" title="${L.del}" aria-label="${L.del}">×</button></div>`}
     ${open || !placed ? `<div class="seg">${LOCS.map(l => `<button data-act="loc" data-v="${x.id}:${l}" class="${x.loc === l ? 'on' : ''}">${ic(l)} ${L[l]}</button>`).join('')}</div>` : ''}
     ${open ? `<div class="s-edit">
         <label class="fld">${L.memo}<input name="note_${x.id}" data-act="memo" data-v="${x.id}" value="${esc(x.note || '')}" placeholder="${L.memoPh}" maxlength="60" autocomplete="off" enterkeyhint="done"></label>
@@ -922,6 +927,11 @@ const actions = {
     }
     take('stock', v);
     toast(t().againMsg, back);
+  },
+  // Aus "Gekauft" löschen (z. B. versehentlich abgehakt) / 구입한 것에서 지우기 (예: 잘못 체크한 것)
+  drop(v) {
+    const x = take('stock', v);
+    if (x) toast(t().removed, { stock: [x] });
   },
   used(v) {
     const x = take('stock', v);
