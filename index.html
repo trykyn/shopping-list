@@ -238,6 +238,7 @@ const T = {
     split: '나누기', splitMsg: "둘로 나눴어요. 새 것은 '정리 전'에 있어요", sugg: '자주 사는 것', dup: '이미 목록에 있어요',
     undo: '되돌리기', removed: '지웠어요', boughtMsg: '구입한 것으로 옮겼어요', usedMsg: '다 쓴 것으로 지웠어요',
     againMsg: '살 것으로 옮겼어요', listGone: '목록을 지웠어요',
+    learned: (n, d) => `${n}: 다음부터 산 날에서 ${d}일로 계산해요`,
     plain: '음식이 아닌 목록 (선물, 생활용품)', plainHint: '체크하면 줄만 그어지고 목록에 남아요. 구입한 것으로 가지 않아요.',
     clearDone: n => `완료한 것 ${n}개 지우기`, doneGone: '완료한 것을 지웠어요',
     searchPh: '구입한 것 검색 (예: 두부, Milch)', noMatch: '찾는 물건이 없어요.', clear: '검색어 지우기',
@@ -266,6 +267,7 @@ const T = {
     split: 'Teilen', splitMsg: 'Geteilt. Der neue Teil steht unter „Noch einräumen“', sugg: 'Oft gekauft', dup: 'Steht schon auf der Liste',
     undo: 'Rückgängig', removed: 'Gelöscht', boughtMsg: 'Nach „Gekauft“ verschoben', usedMsg: 'Als aufgebraucht entfernt',
     againMsg: 'Wieder auf die Liste gesetzt', listGone: 'Liste gelöscht',
+    learned: (n, d) => `${n}: ab jetzt ${d} ${d === 1 ? 'Tag' : 'Tage'} ab Kauf`,
     plain: 'Keine Lebensmittel (Geschenke, Haushalt)', plainHint: 'Abgehaktes wird nur durchgestrichen und bleibt auf der Liste. Es landet nicht unter „Gekauft“.',
     clearDone: n => n === 1 ? '1 erledigten Artikel löschen' : `${n} erledigte Artikel löschen`, doneGone: 'Erledigte gelöscht',
     searchPh: 'Gekauftes suchen (z. B. Milch, 두부)', noMatch: 'Nichts gefunden.', clear: 'Suche löschen',
@@ -403,7 +405,7 @@ function translateOnline(name) {
       // 번역으로 비로소 식품을 알아본 경우 소비기한 채우기
       for (const x of S.stock) if (clean(x.name) === n && !x.days && !x.manual) {
         x.days = guessDays(out);
-        if (x.days) x.expires = addDays(x.bought, shelfDays(x));
+        autoDate(x);
       }
       commit();
     })
@@ -451,6 +453,12 @@ S.fix = S.fix || [];
 // hist: was schon gekauft wurde { id, name, n: wie oft, store: zuletzt wo } – für die Vorschläge beim Eintragen.
 // 지금까지 산 것 { id, name, n: 횟수, store: 마지막으로 산 목록 }. 입력할 때 추천으로 씀.
 S.hist = S.hist || [];
+// life: selbst eingetragene Haltbarkeit { id: Name + Lagerort, d: Tage ab Kauf }. Wer bei einem Artikel das Datum
+// von Hand setzt, bekommt beim nächsten Kauf desselben Artikels diese Dauer statt der allgemeinen Schätzung.
+// 직접 넣은 보관 기간 { id: 이름 + 보관 장소, d: 산 날부터 며칠 }. 날짜를 직접 고치면, 다음에 같은 물건을 살 때
+// 일반 추정 대신 이 기간으로 계산.
+S.life = S.life || [];
+const lifeId = (name, loc) => 'l' + (loc || 'none') + '_' + asKey(tr(name, 'de'));
 const histId = name => 'h' + asKey(clean(name));
 // Gleicher Artikel, egal in welcher Sprache eingegeben ("우유" = "Milch") / 어느 언어로 썼든 같은 물건
 const sameKey = name => searchKey(tr(name, 'de'));
@@ -492,6 +500,20 @@ const daysLeft = s => Math.round((parse(s) - parse(iso(new Date()))) / 864e5);
 // Geschätzte Haltbarkeit am aktuellen Lagerort: im Gefrierfach mindestens 90 Tage.
 // 지금 보관 장소 기준 추정 보관 기간: 냉동고에서는 최소 90일.
 const shelfDays = x => x.days && (x.loc === 'freezer' ? Math.max(x.days, FROZEN_DAYS) : x.days);
+// Selbst eingetragene Haltbarkeit für diesen Lagerort; noch nicht Eingeräumtes nimmt die vom Kühlschrank oder Vorrat.
+// 이 보관 장소에 대해 직접 넣었던 기간. 아직 정리 전이면 냉장고나 실온의 것을 씀.
+function learnedDays(x) {
+  for (const loc of x.loc ? [x.loc] : [null, 'fridge', 'pantry']) {
+    const l = byId('life', lifeId(x.name, loc));
+    if (l) return l.d;
+  }
+}
+// Datum automatisch setzen: erst das Gelernte, sonst die Schätzung; ohne beides bleibt es, wie es ist.
+// 날짜 자동 계산: 기억해 둔 기간이 먼저, 없으면 추정. 둘 다 없으면 그대로 둠.
+function autoDate(x) {
+  const d = learnedDays(x) || shelfDays(x);
+  if (d) x.expires = addDays(x.bought, d);
+}
 // Vorwarnzeit: 7 Tage; bei kurz Haltbarem (≤ 10 Tage) 2 Tage, sonst käme die Meldung direkt beim Kauf.
 // 알림 시점: 7일 전. 보관 기간이 짧은 것(10일 이하)은 사자마자 울리지 않도록 2일 전.
 const lead = x => parse(x.expires) - parse(x.bought) <= 10 * 864e5 ? 2 : 7;
@@ -864,7 +886,7 @@ const actions = {
     const x = byId('stock', v);
     if (!x) return;
     const y = { ...x, id: uid(), loc: null };
-    if (!y.manual && y.days) y.expires = addDays(y.bought, shelfDays(y));
+    if (!y.manual) autoDate(y);
     S.stock.push(y);
     openId = y.id;
     toast(t().splitMsg, { drop: { stock: [y.id] } });
@@ -879,7 +901,7 @@ const actions = {
     // Lag es zuletzt im Vorrat? Dann gleich wieder dorthin. / 지난번에 실온에 뒀으면 바로 실온으로.
     const m = byId('memo', memoId(i.name));
     const x = { id: i.id, name: i.name, ...(i.note && { note: i.note }), store: i.store, loc: m && m.loc === 'pantry' ? 'pantry' : null, bought, days, expires: null };
-    if (days) x.expires = addDays(bought, shelfDays(x));
+    autoDate(x);
     S.stock.push(x);
     const hid = histId(i.name), old = take('hist', hid);
     S.hist.push({ id: hid, name: clean(i.name), n: ((old && old.n) || 0) + 1, store: i.store });
@@ -896,7 +918,7 @@ const actions = {
     const key = memoId(x.name);
     take('memo', key);
     if (loc === 'pantry') S.memo.push({ id: key, loc });
-    if (!x.manual && x.days) x.expires = addDays(x.bought, shelfDays(x));
+    if (!x.manual) autoDate(x);
   },
   // Notiz speichern, ohne neu zu zeichnen: sonst ginge das Antippen eines Knopfs direkt nach dem Schreiben verloren.
   // 메모는 화면을 다시 그리지 않고 저장. 다시 그리면 쓰자마자 누른 버튼이 안 눌림.
@@ -912,7 +934,15 @@ const actions = {
   },
   exp(v, el) {
     const x = byId('stock', v);
-    if (x) { x.expires = el.value || null; x.manual = true; }
+    if (!x) return;
+    x.expires = el.value || null; x.manual = true;
+    // Die Dauer ab Kauf für das nächste Mal merken / 산 날부터의 기간을 다음을 위해 기억
+    const d = x.expires ? Math.round((parse(x.expires) - parse(x.bought)) / 864e5) : 0;
+    if (d < 1 || d > 3650) return;
+    const id = lifeId(x.name, x.loc);
+    take('life', id);
+    S.life.push({ id, d });
+    toast(t().learned(tr(x.name), d));
   },
   again(v) {
     const x = byId('stock', v);
@@ -1063,7 +1093,7 @@ if (cfg) {
   const fb = initializeApp(cfg), auth = A.getAuth(fb);
   const db = F.initializeFirestore(fb, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) });
 
-  const KINDS = ['stores', 'items', 'stock', 'memo', 'fix', 'hist'], FIRST = ['super', 'asia', 'online'];
+  const KINDS = ['stores', 'items', 'stock', 'memo', 'fix', 'hist', 'life'], FIRST = ['super', 'asia', 'online'];
   const sig = o => JSON.stringify(o, Object.keys(o).sort());
   const rank = s => (FIRST.indexOf(s.id) + 1) || 9;
   const house = (code = S.house) => F.doc(db, 'households', code);
